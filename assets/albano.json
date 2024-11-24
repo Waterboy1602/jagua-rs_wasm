@@ -4,7 +4,6 @@
     {
       "Demand": 2,
       "DemandMax": 2,
-      "Dxf": "dxf/i_0.dxf",
       "AllowedOrientations": [
         0.0,
         180.0
@@ -78,7 +77,6 @@
     {
       "Demand": 2,
       "DemandMax": 2,
-      "Dxf": "dxf/i_1.dxf",
       "AllowedOrientations": [
         0.0,
         180.0
@@ -112,7 +110,6 @@
     {
       "Demand": 4,
       "DemandMax": 4,
-      "Dxf": "dxf/i_2.dxf",
       "AllowedOrientations": [
         0.0,
         180.0
@@ -154,7 +151,6 @@
     {
       "Demand": 4,
       "DemandMax": 4,
-      "Dxf": "dxf/i_3.dxf",
       "AllowedOrientations": [
         0.0,
         180.0
@@ -196,7 +192,6 @@
     {
       "Demand": 4,
       "DemandMax": 4,
-      "Dxf": "dxf/i_4.dxf",
       "AllowedOrientations": [
         0.0,
         180.0
@@ -246,7 +241,6 @@
     {
       "Demand": 4,
       "DemandMax": 4,
-      "Dxf": "dxf/i_5.dxf",
       "AllowedOrientations": [
         0.0,
         180.0
@@ -280,7 +274,6 @@
     {
       "Demand": 2,
       "DemandMax": 2,
-      "Dxf": "dxf/i_6.dxf",
       "AllowedOrientations": [
         0.0,
         180.0
@@ -330,7 +323,6 @@
     {
       "Demand": 2,
       "DemandMax": 2,
-      "Dxf": "dxf/i_7.dxf",
       "AllowedOrientations": [
         0.0,
         180.0
