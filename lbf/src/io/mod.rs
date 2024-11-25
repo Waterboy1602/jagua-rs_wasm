@@ -20,12 +20,23 @@ pub mod layout_to_svg;
 pub mod svg_export;
 pub mod svg_util;
 
-pub fn read_json_instance(path: &Path) -> JsonInstance {
-    let file = File::open(path)
+// Path
+pub fn read_json_instance(path: Option<&Path>, json_str: Option<&String>) -> JsonInstance {
+    if path.is_some() {
+        let path = path.unwrap();
+        let file = File::open(path)
         .unwrap_or_else(|err| panic!("could not open instance file: {}, {}", path.display(), err));
-    let reader = BufReader::new(file);
-    serde_json::from_reader(reader)
-        .unwrap_or_else(|err| panic!("could not parse instance file: {}, {}", path.display(), err))
+        let reader = BufReader::new(file);
+        serde_json::from_reader(reader)
+            .unwrap_or_else(|err| panic!("could not parse instance file: {}, {}", path.display(), err))   
+    } else if json_str.is_some()  {
+        let json_str = json_str.unwrap();
+        serde_json::from_str(json_str)
+        .unwrap_or_else(|err| panic!("could not parse string: {}", err))    
+    } else {
+        panic!("No instance file or json string provided")
+    }
+     
 }
 
 // ! Wordt niet meer gebruikt 

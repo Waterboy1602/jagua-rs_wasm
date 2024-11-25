@@ -6,11 +6,7 @@ use rocket::response::{Flash, Redirect};
 
 use rocket_dyn_templates::{Template, context};
 
-use lbf::io::cli::Cli;
-use lbf::io::json_output::JsonOutput;
-use lbf::io::layout_to_svg::s_layout_to_svg;
-use lbf::lbf_config::LBFConfig;
-use lbf::lbf_optimizer::LBFOptimizer;
+use lbf::lbf_run::solve_json;
 
 #[derive(Debug, FromForm)]
 pub struct Json {
@@ -26,7 +22,8 @@ fn index() -> Template {
 async fn json(form_data: Form<Json>) -> Flash<Redirect> {
     let json = form_data.into_inner();
     println!("Received JSON: {}", json.json_str);
-
+    let result = solve_json(json.json_str);
+    
     if json.json_str.is_empty() {
         Flash::error(Redirect::to("/"), "JSON cannot be empty.")
     } else {
