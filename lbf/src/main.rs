@@ -59,7 +59,7 @@ fn main() {
     if args.input_file.to_str().unwrap().contains("dxf") {
         println!("{} is a dxf json file", args.input_file.as_path().to_string_lossy());
 
-        json_with_dxf_instance = io::read_json_instance(args.input_file.as_path());
+        json_with_dxf_instance = io::read_json_instance(Some(args.input_file.as_path()), None);
         let poly_simpl_config = match config.poly_simpl_tolerance {
             Some(tolerance) => PolySimplConfig::Enabled { tolerance },
             None => PolySimplConfig::Disabled,
@@ -77,7 +77,7 @@ fn main() {
         
     } else if args.input_file.to_str().unwrap().contains(".json") {
         println!("{} is a regular json file", args.input_file.as_path().to_string_lossy());
-        json_instance = io::read_json_instance(args.input_file.as_path());
+        json_instance = io::read_json_instance(Some(args.input_file.as_path()), None);
         let poly_simpl_config = match config.poly_simpl_tolerance {
             Some(tolerance) => PolySimplConfig::Enabled { tolerance },
             None => PolySimplConfig::Disabled,
@@ -193,5 +193,3 @@ fn main() {
         );
     }
 }
-
-

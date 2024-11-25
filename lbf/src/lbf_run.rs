@@ -15,14 +15,14 @@ use crate::lbf_config::LBFConfig;
 use crate::lbf_optimizer::LBFOptimizer;
 use crate::{io, EPOCH};
 
-pub fn solve_json(input_json: String){
+pub fn solve_json(input_json: String, path_sol: String) -> Vec<String> {
     let config = LBFConfig::default();
     
     let json_instance: JsonInstance;
     let instance: Instance;
 
 
-    json_instance = io::read_json_instance(input_json.);
+    json_instance = io::read_json_instance(None, Some(&input_json));
     let poly_simpl_config = match config.poly_simpl_tolerance {
         Some(tolerance) => PolySimplConfig::Enabled { tolerance },
         None => PolySimplConfig::Disabled,
@@ -47,14 +47,17 @@ pub fn solve_json(input_json: String){
     };
 
 
-    let solution_path = format!("sol_{}.json", "web");
+    let solution_path = format!("{}sol_{}.json", path_sol, "web");
     io::write_json_output(&json_output, Path::new(&solution_path));
 
+    let mut svg_files = Vec::new();
     for (i, s_layout) in solution.layout_snapshots.iter().enumerate() {
-        let svg_path = format!("sol_{}_{}.svg", "web", i);
+        let svg_path = format!("{}sol_{}_{}.svg", path_sol, "web", i);
         io::write_svg(
             &s_layout_to_svg(s_layout, &instance, config.svg_draw_options),
             Path::new(&svg_path),
         );
+        svg_files.push(svg_path);
     }
+    svg_files
 }

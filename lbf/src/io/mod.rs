@@ -36,7 +36,6 @@ pub fn read_json_instance(path: Option<&Path>, json_str: Option<&String>) -> Jso
     } else {
         panic!("No instance file or json string provided")
     }
-     
 }
 
 // ! Wordt niet meer gebruikt 
