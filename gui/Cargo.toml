@@ -7,7 +7,6 @@ authors = ["Wannes Van de Putte"]
 [dependencies]
 rocket = "0.5.1"
 tera = "1"
-cargo-watch="8.5.3"
 jagua-rs = { path = "../jagua-rs" , version = "0.1.1", features = [] }
 lbf = { path = "../lbf" , version = "0.1.1", features = [] }
 
@@ -15,3 +14,6 @@ lbf = { path = "../lbf" , version = "0.1.1", features = [] }
 [dependencies.rocket_dyn_templates]
 version = "0.2.0"
 features = ["tera"]
+
+[dev-dependencies]
+cargo-watch="8.5.3"
