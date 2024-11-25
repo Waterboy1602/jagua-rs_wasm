@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Jagua-rs GUI</title>
+    <title>Jagua-rs</title>
     <link rel="stylesheet" type="text/css" href="/style/index.css">
 </head>
 
 <body>
-    <h1>Jagua-rs Settings</h1>
+    <h1>Jagua-rs</h1>
     <form action="/json" method="post">
         <label for="json">JSON</label><br>
         <textarea id="json_str" name="json_str" placeholder="Enter your JSON here..."></textarea>

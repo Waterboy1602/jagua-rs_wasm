@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <title>Jagua-rs GUI</title>
+    <link rel="stylesheet" type="text/css" href="/style/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+    <h1>Solution</h1>
+
+    <a href="{{ path_json}}" download="solution.json" class="btn" class="btn">
+        <i class="fa fa-download"></i>
+        JSON
+    </a>
+
+    <div class="container solution">
+        <img src="{{ path_svg }}">
+    </div>
+</body>
+</html>

@@ -52,3 +52,34 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
+div.container.solution {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+
+    width: 90%;
+    height: 70%;
+}
+
+div.container.solution > img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    background-color: #007BFF;
+    text-decoration: none;
+    border-radius: 5px;
+    border: none;
+}
+.btn:hover {
+    background-color: #0056b3;
+}
