@@ -4,20 +4,13 @@ import './App.css';
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+          <h1>Jagua-rs</h1>
+          <form action="/json" method="post">
+              <label for="json">JSON</label><br/>
+              <textarea id="json_str" name="json_str" placeholder="Enter your JSON here..."></textarea>
+              <br/><br/>
+              <button type="submit">Submit</button>
+          </form>
     </div>
   );
 }
