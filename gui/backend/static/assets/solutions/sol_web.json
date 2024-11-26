@@ -1,0 +1,692 @@
+{
+  "Name": "albano",
+  "Items": [
+    {
+      "Demand": 2,
+      "Dxf": null,
+      "AllowedOrientations": [
+        0.0,
+        180.0
+      ],
+      "Shape": {
+        "Type": "SimplePolygon",
+        "Data": [
+          [
+            0.0,
+            86.0
+          ],
+          [
+            966.0,
+            142.0
+          ],
+          [
+            1983.0,
+            0.0
+          ],
+          [
+            2185.0,
+            238.0
+          ],
+          [
+            2734.0,
+            217.0
+          ],
+          [
+            3000.0,
+            767.0
+          ],
+          [
+            2819.0,
+            900.0
+          ],
+          [
+            2819.0,
+            1360.0
+          ],
+          [
+            3000.0,
+            1493.0
+          ],
+          [
+            2734.0,
+            2043.0
+          ],
+          [
+            2185.0,
+            2022.0
+          ],
+          [
+            1983.0,
+            2260.0
+          ],
+          [
+            966.0,
+            2118.0
+          ],
+          [
+            0.0,
+            2174.0
+          ],
+          [
+            0.0,
+            86.0
+          ]
+        ]
+      },
+      "Value": null,
+      "BaseQuality": null
+    },
+    {
+      "Demand": 2,
+      "Dxf": null,
+      "AllowedOrientations": [
+        0.0,
+        180.0
+      ],
+      "Shape": {
+        "Type": "SimplePolygon",
+        "Data": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            3034.0,
+            0.0
+          ],
+          [
+            3034.0,
+            261.0
+          ],
+          [
+            0.0,
+            261.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "Value": null,
+      "BaseQuality": null
+    },
+    {
+      "Demand": 4,
+      "Dxf": null,
+      "AllowedOrientations": [
+        0.0,
+        180.0
+      ],
+      "Shape": {
+        "Type": "SimplePolygon",
+        "Data": [
+          [
+            0.0,
+            173.0
+          ],
+          [
+            1761.0,
+            0.0
+          ],
+          [
+            2183.0,
+            650.0
+          ],
+          [
+            2183.0,
+            1010.0
+          ],
+          [
+            1761.0,
+            1660.0
+          ],
+          [
+            0.0,
+            1487.0
+          ],
+          [
+            0.0,
+            173.0
+          ]
+        ]
+      },
+      "Value": null,
+      "BaseQuality": null
+    },
+    {
+      "Demand": 4,
+      "Dxf": null,
+      "AllowedOrientations": [
+        0.0,
+        180.0
+      ],
+      "Shape": {
+        "Type": "SimplePolygon",
+        "Data": [
+          [
+            74.0,
+            0.0
+          ],
+          [
+            870.0,
+            119.0
+          ],
+          [
+            1666.0,
+            0.0
+          ],
+          [
+            1740.0,
+            125.0
+          ],
+          [
+            870.0,
+            305.0
+          ],
+          [
+            0.0,
+            125.0
+          ],
+          [
+            74.0,
+            0.0
+          ]
+        ]
+      },
+      "Value": null,
+      "BaseQuality": null
+    },
+    {
+      "Demand": 4,
+      "Dxf": null,
+      "AllowedOrientations": [
+        0.0,
+        180.0
+      ],
+      "Shape": {
+        "Type": "SimplePolygon",
+        "Data": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            411.0,
+            65.0
+          ],
+          [
+            800.0,
+            0.0
+          ],
+          [
+            1189.0,
+            65.0
+          ],
+          [
+            1600.0,
+            0.0
+          ],
+          [
+            1500.0,
+            368.0
+          ],
+          [
+            800.0,
+            286.0
+          ],
+          [
+            100.0,
+            368.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "Value": null,
+      "BaseQuality": null
+    },
+    {
+      "Demand": 4,
+      "Dxf": null,
+      "AllowedOrientations": [
+        0.0,
+        180.0
+      ],
+      "Shape": {
+        "Type": "SimplePolygon",
+        "Data": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            936.0,
+            0.0
+          ],
+          [
+            936.0,
+            659.0
+          ],
+          [
+            0.0,
+            659.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "Value": null,
+      "BaseQuality": null
+    },
+    {
+      "Demand": 2,
+      "Dxf": null,
+      "AllowedOrientations": [
+        0.0,
+        180.0
+      ],
+      "Shape": {
+        "Type": "SimplePolygon",
+        "Data": [
+          [
+            56.0,
+            73.0
+          ],
+          [
+            1066.0,
+            143.0
+          ],
+          [
+            1891.0,
+            0.0
+          ],
+          [
+            2186.0,
+            288.0
+          ],
+          [
+            2573.0,
+            241.0
+          ],
+          [
+            2676.0,
+            926.0
+          ],
+          [
+            2594.0,
+            1366.0
+          ],
+          [
+            0.0,
+            1366.0
+          ],
+          [
+            56.0,
+            73.0
+          ]
+        ]
+      },
+      "Value": null,
+      "BaseQuality": null
+    },
+    {
+      "Demand": 2,
+      "Dxf": null,
+      "AllowedOrientations": [
+        0.0,
+        180.0
+      ],
+      "Shape": {
+        "Type": "SimplePolygon",
+        "Data": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            2499.0,
+            0.0
+          ],
+          [
+            2705.0,
+            387.0
+          ],
+          [
+            2622.0,
+            934.0
+          ],
+          [
+            2148.0,
+            967.0
+          ],
+          [
+            1920.0,
+            1152.0
+          ],
+          [
+            1061.0,
+            1059.0
+          ],
+          [
+            0.0,
+            1125.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "Value": null,
+      "BaseQuality": null
+    }
+  ],
+  "Strip": {
+    "Height": 4900.0
+  },
+  "Solution": {
+    "Usage": 0.69430566,
+    "RunTimeSec": 50,
+    "Layouts": [
+      {
+        "Container": {
+          "Type": "Strip",
+          "Params": {
+            "Width": 12538.38,
+            "Height": 4900.0
+          }
+        },
+        "PlacedItems": [
+          {
+            "Index": 0,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                3002.1787,
+                2266.4814
+              ]
+            }
+          },
+          {
+            "Index": 0,
+            "Transformation": {
+              "Rotation": 0.0,
+              "Translation": [
+                2.6481934,
+                2132.2068
+              ]
+            }
+          },
+          {
+            "Index": 1,
+            "Transformation": {
+              "Rotation": 0.0,
+              "Translation": [
+                2.1635742,
+                4393.7603
+              ]
+            }
+          },
+          {
+            "Index": 1,
+            "Transformation": {
+              "Rotation": 0.0,
+              "Translation": [
+                2782.2607,
+                2181.245
+              ]
+            }
+          },
+          {
+            "Index": 6,
+            "Transformation": {
+              "Rotation": 0.0,
+              "Translation": [
+                3002.1792,
+                0.061035156
+              ]
+            }
+          },
+          {
+            "Index": 6,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                5619.548,
+                4145.1323
+              ]
+            }
+          },
+          {
+            "Index": 7,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                8241.413,
+                2179.1414
+              ]
+            }
+          },
+          {
+            "Index": 7,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                8315.094,
+                3391.4795
+              ]
+            }
+          },
+          {
+            "Index": 2,
+            "Transformation": {
+              "Rotation": 0.0,
+              "Translation": [
+                8242.162,
+                2.0842896
+              ]
+            }
+          },
+          {
+            "Index": 2,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                10174.921,
+                4899.594
+              ]
+            }
+          },
+          {
+            "Index": 2,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                10498.26,
+                3200.081
+              ]
+            }
+          },
+          {
+            "Index": 2,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                12536.216,
+                2136.2617
+              ]
+            }
+          },
+          {
+            "Index": 3,
+            "Transformation": {
+              "Rotation": 0.0,
+              "Translation": [
+                2572.4556,
+                4172.762
+              ]
+            }
+          },
+          {
+            "Index": 3,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                4742.361,
+                1674.7935
+              ]
+            }
+          },
+          {
+            "Index": 3,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                4198.305,
+                4899.3823
+              ]
+            }
+          },
+          {
+            "Index": 3,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                4610.0195,
+                2747.709
+              ]
+            }
+          },
+          {
+            "Index": 4,
+            "Transformation": {
+              "Rotation": 0.0,
+              "Translation": [
+                3002.7686,
+                1667.6138
+              ]
+            }
+          },
+          {
+            "Index": 4,
+            "Transformation": {
+              "Rotation": 0.0,
+              "Translation": [
+                3944.899,
+                4374.0806
+              ]
+            }
+          },
+          {
+            "Index": 4,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                5878.4175,
+                4426.6436
+              ]
+            }
+          },
+          {
+            "Index": 4,
+            "Transformation": {
+              "Rotation": 0.0,
+              "Translation": [
+                5511.0728,
+                1.0974274
+              ]
+            }
+          },
+          {
+            "Index": 5,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                6615.695,
+                1022.6693
+              ]
+            }
+          },
+          {
+            "Index": 5,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                6529.267,
+                4050.7883
+              ]
+            }
+          },
+          {
+            "Index": 5,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                6815.226,
+                4711.6978
+              ]
+            }
+          },
+          {
+            "Index": 5,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                7552.127,
+                1029.1527
+              ]
+            }
+          }
+        ],
+        "Statistics": {
+          "Usage": 0.69430566
+        }
+      }
+    ]
+  },
+  "Config": {
+    "cde_config": {
+      "quadtree_depth": 5,
+      "hpg_n_cells": 2000,
+      "item_surrogate_config": {
+        "pole_coverage_goal": 0.9,
+        "max_poles": 10,
+        "n_ff_poles": 2,
+        "n_ff_piers": 0
+      }
+    },
+    "poly_simpl_tolerance": 0.001,
+    "prng_seed": 0,
+    "n_samples": 5000,
+    "ls_frac": 0.2,
+    "svg_draw_options": {
+      "theme": {
+        "stroke_width_multiplier": 2.0,
+        "bin_fill": "#CC824A",
+        "item_fill": "#FFC879",
+        "hole_fill": "#2D2D2D",
+        "qz_fill": [
+          "#000000",
+          "#FF0000",
+          "#FF5E00",
+          "#FFA500",
+          "#C7A900",
+          "#FFFF00",
+          "#CBFF00",
+          "#CBFF00",
+          "#CBFF00",
+          "#CBFF00"
+        ],
+        "qz_stroke_opac": 0.5
+      },
+      "quadtree": false,
+      "haz_prox_grid": false,
+      "surrogate": false
+    }
+  }
+}

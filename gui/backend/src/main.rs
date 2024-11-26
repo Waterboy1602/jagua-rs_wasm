@@ -62,6 +62,6 @@ fn rocket() -> _ {
     rocket::build()
         .manage(SvgFiles::default()) // Initialize shared state.
         .mount("/", routes![index, json, sol])
-        .mount("/", FileServer::from(relative!("/static")))
+        .mount("/", FileServer::from(relative!("./static")))
         .attach(Template::fairing())
 }
