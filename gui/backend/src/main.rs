@@ -10,8 +10,6 @@ use rocket::serde::{Deserialize, Serialize, json::Json};
 use rocket::http::Method;
 use rocket_cors::{AllowedHeaders, AllowedOrigins, Cors, CorsOptions};
 
-use rocket_dyn_templates::{Template, context};
-
 use lbf::lbf_run::solve_json;
 
 type SvgFiles = Mutex<Vec<String>>; // Define a type alias for shared state.
@@ -43,7 +41,7 @@ async fn json(input_data: Json<InputData>, svg_state: &State<SvgFiles>) -> Flash
 }
 
 #[get("/solution")]
-fn sol(svg_state: &State<SvgFiles>) -> Template {
+fn sol(svg_state: &State<SvgFiles>) {
     let svg_files = svg_state.lock().expect("State lock poisoned");
     let path = svg_files.get(0).unwrap();
     let adjusted_path_svg  = path.replace("/static", "");
@@ -52,8 +50,6 @@ fn sol(svg_state: &State<SvgFiles>) -> Template {
                                     .replace("_0", "");
     // let adjusted_path_svg = "/solutions/sol_web_0.svg";
     println!("{}", adjusted_path_svg);
-
-    Template::render("solution", context! {path_svg: adjusted_path_svg, path_json: adjusted_path_json})
 }
 
 
@@ -77,6 +73,5 @@ fn rocket() -> _ {
         .manage(SvgFiles::default()) // Initialize shared state.
         .mount("/", routes![json, sol])
         .mount("/", FileServer::from(relative!("./static")))
-        .attach(Template::fairing())
         .attach(cors)
 }
