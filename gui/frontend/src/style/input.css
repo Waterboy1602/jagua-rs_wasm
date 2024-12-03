@@ -1,0 +1,50 @@
+.container {
+    display: flex;
+}
+
+.input {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    width: 100vw;
+    top: 0;
+    left: 0;
+}
+
+.items {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.title {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.item {
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+
+    width: 20vw;
+    height: 30vh;
+    margin: 30px;
+}
+
+h3 {
+    text-align: center;
+}
+
+input.number {
+    width: 50px;
+    margin: 0 5px 0 5px;
+}
+
+.submit {
+    width: 100px;
+    margin: 0 auto;
+}

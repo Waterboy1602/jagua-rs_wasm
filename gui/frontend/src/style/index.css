@@ -1,8 +1,12 @@
 body {
   font-family: Arial, sans-serif;
   background-color: #f4f4f9;
+  
   margin: 0;
   padding: 0;
+}
+
+.home {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -80,6 +84,7 @@ div.container.solution > img {
   border-radius: 5px;
   border: none;
 }
+
 .btn:hover {
   background-color: #0056b3;
 }

@@ -1,48 +1,38 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 import '../style/index.css';
 
-// Handle form submission
-const handleSubmit = (event, jsonInput, setResponseMessage, setError) => {
-    event.preventDefault(); // Prevent default form submission
-
-    try {
-      // Attempt to parse JSON to validate it before sending
-      JSON.parse(jsonInput);
-    } catch (err) {
-      setError("Invalid JSON input. Please correct it.");
-      return;
-    }
-
-    setError(null); // Clear any existing error
-    setResponseMessage("Loading...");
-
-    // Make the POST request
-    axios
-        .post("http://localhost:8000/json", { json_str: jsonInput })
-        .then((response) => {
-            setResponseMessage(response.data.message); // Assuming backend returns a `message`
-        })
-        .catch((err) => {
-            setError("Failed to fetch data from the backend.");
-            console.error(err);
-        });
-}
-
-
-
 const Home = () => {
     const [jsonInput, setJsonInput] = useState(""); // Holds the input JSON string
-    const [responseMessage, setResponseMessage] = useState(""); // To display the response
     const [error, setError] = useState(null); // To display any errors
+    const navigate = useNavigate();
+
+
+    const handleSubmit = (event) => {
+        event.preventDefault(); // Prevent default form submission
+    
+        try {
+            // Attempt to parse JSON to validate it before sending
+            const parsedJson = JSON.parse(jsonInput);
+      
+            // Clear any existing errors
+            setError(null);
+      
+            // Navigate to "/input" with validated JSON data
+            navigate("/input", { state: { jsonData: parsedJson } });
+          } catch (err) {
+            // Show error message if JSON is invalid
+            setError("Invalid JSON input. Please correct it.");
+          }
+    };
 
     return (
-        <div className="App">
+        <div className="home">
             <h1>Jagua-rs</h1>
 
             {/* Form */}
-            <form onSubmit={(e) => handleSubmit(e, jsonInput, setResponseMessage, setError)}>
+            <form onSubmit={handleSubmit}>
                 <label htmlFor="json_str">JSON</label>
                 <br/>
                 <textarea
@@ -55,7 +45,10 @@ const Home = () => {
 
                 <br/><br/>
                 <button type="submit">Submit</button>
-                </form>
+            </form>
+
+            {/* Error Message */}
+            {error && <p style={{ color: "red" }}>{error}</p>}
         </div>
     );
 }
