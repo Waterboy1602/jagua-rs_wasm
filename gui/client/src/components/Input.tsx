@@ -1,56 +1,8 @@
-// gui/frontend/src/components/Input.js
+import { useState } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import '../style/input.css';
-
-// Handle form submission
-interface HandleSubmitProps {
-    event: React.MouseEvent<HTMLButtonElement>;
-    jsonInput: string;
-    selected: boolean[];
-    setResponseMessage: React.Dispatch<React.SetStateAction<string>>;
-    setError: React.Dispatch<React.SetStateAction<string | null>>;
-}
-
-const handleSubmit = ({ event, jsonInput, selected, setResponseMessage, setError }: HandleSubmitProps) => {
-    event.preventDefault();
-
-    parseJson(jsonInput, selected);
-
-    setError(null); // Clear any existing error
-    setResponseMessage("Loading...");
-
-    // Make the POST request
-    axios
-        .post("http://localhost:8000/json", { json_str: jsonInput })
-        .then((response) => {
-            setResponseMessage(response.data.message); // Assuming backend returns a `message`
-        })
-        .catch((err) => {
-            setError("Failed to fetch data from the backend.");
-            console.error(err);
-        });
-};
-
-interface ParsedJson {
-    Items: Item[];
-}
-
-const parseJson = (jsonInput: string, selected: boolean[]): ParsedJson => {
-    const parsedJson: ParsedJson = JSON.parse(jsonInput);
-    const items: Item[] = parsedJson.Items;
-    const selectedItems: Item[] = [];
-
-    for (let i = 0; i < items.length; i++) {
-        if (selected[i]) {
-            selectedItems.push(items[i]);
-        }
-    }
-
-    parsedJson.Items = selectedItems;
-    return parsedJson;
-}
+import "../style/input.css";
 
 interface Shape {
     Data: boolean[][];
@@ -63,85 +15,168 @@ interface Item {
     Shape: Shape;
 }
 
+const makeJSON = (
+    name: string,
+    items: Item[],
+    selected: boolean[],
+    strip: string
+): string => {
+    const jsonObj: { Name?: string; Items?: Item[]; Strip?: string } = {
+        Name: "",
+        Items: [],
+    };
 
-const renderShape = (shape: Shape) => (
-  <div>
-    <b>Data:</b>
-    <ul>
-      {shape.Data.map((point: boolean[], index: number) => (
-        <li key={index}>
-          ({point[0]}, {point[1]})
-        </li>
-      ))}
-    </ul>
-  </div>
-);
+    jsonObj["Name"] = name;
+    jsonObj["Items"] = [];
 
+    for (let i = 0; i < selected.length; i++) {
+        if (selected[i]) {
+            jsonObj["Items"].push(items[i]);
+        }
+    }
+    jsonObj["Strip"] = strip;
 
-
-  const renderItems = (items: Item[], selected: boolean[]) => {      
-    return items.map((item, index: number) => (
-        <>
-        <div key={index} className="item">
-            <h3>Item {index + 1}</h3>
-
-            <p>
-                <b>Select:</b> 
-                <input className="boolean" type="checkbox" checked={selected[index]} />
-            </p>
-
-            <p>
-                <b>Demand:</b> 
-                <input className="number" type="number" value={item.Demand} />
-            </p>
-
-            <p>
-                <b>Demand Max:</b> 
-                <input className="number" type="number" value={item.DemandMax} />
-            </p>
-
-            <p>
-                <b>Allowed Orientations:</b>
-                {
-                    item.AllowedOrientations.map((orientation: number, idx: number) => (
-                        <input key={idx} className="number" type="number" value={orientation} />
-                    ))
-                }
-                <br/>
-            </p>
-
-            <div>
-                {renderShape(item.Shape)}
-            </div>
-        </div>
-        </>
-    ));
-  };
-
-
+    return JSON.stringify(jsonObj);
+};
 
 const Input = () => {
+    const navigate = useNavigate();
     const location = useLocation();
     const jsonData = location.state?.jsonData;
-    const selected: boolean[] = [];
+    const [items, setItems] = useState<Item[]>([]);
+    const [selected, setSelected] = useState<boolean[]>([]);
+
+    const handleSubmit = () => {
+        const json: string = makeJSON(
+            jsonData.Name,
+            items,
+            selected,
+            jsonData.Strip
+        );
+
+        console.log(json);
+
+        axios
+            .post("http://localhost:8000/json", { json_str: json })
+            .then((response) => {
+                console.log(response);
+                navigate("/result", response.data);
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
+
+    const handleCheckboxChange = (index: number) => {
+        const newSelected = [...selected];
+        newSelected[index] = !newSelected[index];
+        setSelected(newSelected);
+    };
+
+    const renderShape = (shape: Shape) => (
+        <div>
+            <b>Data:</b>
+            <ul>
+                {shape.Data.map((point: boolean[], index: number) => (
+                    <li key={index}>
+                        ({point[0]}, {point[1]})
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+
+    const renderItems = (items: Item[], selected: boolean[]) => {
+        return items.map((item, index: number) => (
+            <>
+                <div key={index} className="item">
+                    <div>
+                        <input
+                            className="boolean"
+                            type="checkbox"
+                            checked={selected[index]}
+                            onChange={() => handleCheckboxChange(index)}
+                        />
+
+                        <h3>Item {index + 1}</h3>
+                    </div>
+
+                    <hr />
+
+                    <p>
+                        <b>Demand:</b>
+                        <input
+                            className="number"
+                            type="number"
+                            value={item.Demand}
+                            onChange={(e) => {
+                                const newItems = [...items];
+                                newItems[index].Demand = parseInt(
+                                    e.target.value
+                                );
+                                setItems(newItems);
+                            }}
+                        />
+                    </p>
+
+                    <p>
+                        <b>Demand Max:</b>
+                        <input
+                            className="number"
+                            type="number"
+                            value={item.DemandMax}
+                            onChange={(e) => {
+                                const newItems = [...items];
+                                newItems[index].DemandMax = parseInt(
+                                    e.target.value
+                                );
+                                setItems(newItems);
+                            }}
+                        />
+                    </p>
+
+                    <p>
+                        <b>Allowed Orientations:</b>
+                        {item.AllowedOrientations.map(
+                            (orientation: number, idx: number) => (
+                                <input
+                                    key={idx}
+                                    className="number"
+                                    type="number"
+                                    value={orientation}
+                                    onChange={(e) => {
+                                        const newItems = [...items];
+                                        newItems[index].AllowedOrientations[
+                                            index
+                                        ] = parseInt(e.target.value);
+                                        setItems(newItems);
+                                    }}
+                                />
+                            )
+                        )}
+                        <br />
+                    </p>
+
+                    <div>{renderShape(item.Shape)}</div>
+                </div>
+            </>
+        ));
+    };
 
     return (
         <div className="container input">
-            <h1 className="title">JSON Overview - {jsonData.Name}</h1>
+            <div className="title">
+                <h1>JSON Overview - {jsonData.Name}</h1>
+
+                <button className="submit" type="submit" onClick={handleSubmit}>
+                    Submit
+                </button>
+            </div>
 
             <div className="container items">
                 {renderItems(jsonData.Items, selected)}
             </div>
-
-            <button className="submit" type="submit" onClick={(event) => handleSubmit({
-                event,
-                jsonInput: JSON.stringify(jsonData),
-                selected,
-                setResponseMessage: () => {},
-                setError: () => {}
-            })}>Submit</button>
         </div>
-
     );
 };
 

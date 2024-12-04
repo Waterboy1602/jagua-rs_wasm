@@ -23,20 +23,20 @@ pub struct InputData {
 
 
 #[post("/json", format = "json", data = "<input_data>")]
-async fn json(input_data: Json<InputData>, svg_state: &State<SvgFiles>) -> Flash<Redirect> {
+async fn json(input_data: Json<InputData>, svg_state: &State<SvgFiles>) -> Result<String, String> {
     let json = input_data.into_inner();
     if json.json_str.is_empty() {
-        return Flash::error(Redirect::to("/"), "JSON cannot be empty.")
+        return Err("JSON cannot be empty".to_string());
     }
 
     let svg_files = solve_json(json.json_str.clone(), "./static/solutions/".to_string());
     if svg_files.is_empty() {
-        return Flash::error(Redirect::to("/"), "No solution found.")
+        return Err("No solution found.".to_string());
     } else {
         let mut state = svg_state.lock().expect("State lock poisoned");
         *state = svg_files;
         println!("SVG files: {:?}", state);
-        return Flash::success(Redirect::to("/solution"), "Solution found.")
+        return Ok(state[0].clone());
     }
 }
 
@@ -57,7 +57,7 @@ fn sol(svg_state: &State<SvgFiles>) {
 fn rocket() -> _ {
     // Configure CORS options
     let cors = CorsOptions {
-        allowed_origins: AllowedOrigins::some_exact(&["http://localhost:3000"]),
+        allowed_origins: AllowedOrigins::some_exact(&["http://localhost:5173"]),
         allowed_methods: vec![Method::Get, Method::Post, Method::Options]
             .into_iter()
             .map(From::from)
