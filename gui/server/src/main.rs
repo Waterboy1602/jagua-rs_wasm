@@ -1,26 +1,24 @@
-#[macro_use] extern crate rocket;
+#[macro_use]
+extern crate rocket;
 
 use std::sync::Mutex;
 
-use rocket::State;
 use rocket::form::Form;
-use rocket::fs::{FileServer, relative};
-use rocket::response::{Flash, Redirect};
-use rocket::serde::{Deserialize, Serialize, json::Json};
+use rocket::fs::{relative, FileServer};
 use rocket::http::Method;
+use rocket::response::{Flash, Redirect};
+use rocket::serde::{json::Json, Deserialize, Serialize};
+use rocket::State;
 use rocket_cors::{AllowedHeaders, AllowedOrigins, Cors, CorsOptions};
 
 use lbf::lbf_run::solve_json;
 
 type SvgFiles = Mutex<Vec<String>>; // Define a type alias for shared state.
 
-
 #[derive(Deserialize, Serialize)]
 pub struct InputData {
     pub json_str: String,
 }
-
-
 
 #[post("/json", format = "json", data = "<input_data>")]
 async fn json(input_data: Json<InputData>, svg_state: &State<SvgFiles>) -> Result<String, String> {
@@ -40,18 +38,18 @@ async fn json(input_data: Json<InputData>, svg_state: &State<SvgFiles>) -> Resul
     }
 }
 
-#[get("/solution")]
+#[get("/file")]
 fn sol(svg_state: &State<SvgFiles>) {
     let svg_files = svg_state.lock().expect("State lock poisoned");
     let path = svg_files.get(0).unwrap();
-    let adjusted_path_svg  = path.replace("/static", "");
-    let adjusted_path_json = path.replace(".svg", ".json")
-                                    .replace("/static", "")
-                                    .replace("_0", "");
+    let adjusted_path_svg = path.replace("/static", "");
+    let adjusted_path_json = path
+        .replace(".svg", ".json")
+        .replace("/static", "")
+        .replace("_0", "");
     // let adjusted_path_svg = "/solutions/sol_web_0.svg";
     println!("{}", adjusted_path_svg);
 }
-
 
 #[launch]
 fn rocket() -> _ {

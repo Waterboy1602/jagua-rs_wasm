@@ -1,5 +1,12 @@
 {
-    "cSpell.words": [
-        "Polyline"
-    ]
+    "cSpell.words": ["Polyline"],
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "[dart]": {
+        "editor.formatOnSave": true
+    },
+    "[rust]": {
+        "editor.defaultFormatter": "rust-lang.rust-analyzer",
+        "editor.formatOnSave": true
+    }
 }

@@ -11,10 +11,10 @@ use mimalloc::MiMalloc;
 use rand::prelude::SmallRng;
 use rand::SeedableRng;
 
+use jagua_rs::entities::instances::instance::Instance;
 use jagua_rs::io::parser;
 use jagua_rs::io::parser::Parser;
 use jagua_rs::util::polygon_simplification::PolySimplConfig;
-use jagua_rs::entities::instances::instance::Instance;
 use lbf::io::cli::Cli;
 use lbf::io::json_output::JsonOutput;
 use lbf::io::layout_to_svg::s_layout_to_svg;
@@ -57,7 +57,10 @@ fn main() {
     let instance: Instance;
 
     if args.input_file.to_str().unwrap().contains("dxf") {
-        println!("{} is a dxf json file", args.input_file.as_path().to_string_lossy());
+        println!(
+            "{} is a dxf json file",
+            args.input_file.as_path().to_string_lossy()
+        );
 
         json_with_dxf_instance = io::read_json_instance(Some(args.input_file.as_path()), None);
         let poly_simpl_config = match config.poly_simpl_tolerance {
@@ -65,28 +68,35 @@ fn main() {
             None => PolySimplConfig::Disabled,
         };
 
-        let parent_dir = args.input_file.as_path()
+        let parent_dir = args
+            .input_file
+            .as_path()
             .parent()
             .expect("Could not get parent directory")
             .to_path_buf();
-        
+
         let parser = Parser::new(poly_simpl_config, config.cde_config, true, parent_dir);
         instance = parser.parse(&json_with_dxf_instance);
 
         json_instance = json_with_dxf_instance.clone();
-        
     } else if args.input_file.to_str().unwrap().contains(".json") {
-        println!("{} is a regular json file", args.input_file.as_path().to_string_lossy());
+        println!(
+            "{} is a regular json file",
+            args.input_file.as_path().to_string_lossy()
+        );
         json_instance = io::read_json_instance(Some(args.input_file.as_path()), None);
         let poly_simpl_config = match config.poly_simpl_tolerance {
             Some(tolerance) => PolySimplConfig::Enabled { tolerance },
             None => PolySimplConfig::Disabled,
         };
-    
+
         let parser = Parser::new(poly_simpl_config, config.cde_config, true, PathBuf::new());
         instance = parser.parse(&json_instance);
     } else {
-        error!("{} is neither a directory nor a regular file", args.input_file.as_path().to_string_lossy());
+        error!(
+            "{} is neither a directory nor a regular file",
+            args.input_file.as_path().to_string_lossy()
+        );
         panic!();
     }
 
@@ -101,13 +111,10 @@ fn main() {
     //         for entry in entries {
     //             let entry = entry.unwrap();
     //             let path = entry.path();
-                
+
     //             // Doe iets met het bestand, bijvoorbeeld:
     //             if path.is_file() && path.extension().map_or(false, |ext| ext == "dxf") {
     //                 println!("Bestand gevonden: {}", path.display());
-
-
-                    
 
     //                 // let dxf_instance = io::read_dxf_instance(path.as_path());
 
@@ -115,20 +122,18 @@ fn main() {
     //                     Some(tolerance) => PolySimplConfig::Enabled { tolerance },
     //                     None => PolySimplConfig::Disabled,
     //                 };
-                
+
     //                 // let parser = Parser::new(poly_simpl_config, config.cde_config, true);
     //                 // instance = parser.parse(&dxf_instance);
     //             }
     //         }
 
-
-            
     //         json_instance = io::read_json_instance(args.input_file.as_path());
     //         let poly_simpl_config = match config.poly_simpl_tolerance {
     //             Some(tolerance) => PolySimplConfig::Enabled { tolerance },
     //             None => PolySimplConfig::Disabled,
     //         };
-        
+
     //         let parser = Parser::new(poly_simpl_config, config.cde_config, true);
     //         instance = parser.parse(&json_instance);
 
@@ -140,7 +145,7 @@ fn main() {
     //             Some(tolerance) => PolySimplConfig::Enabled { tolerance },
     //             None => PolySimplConfig::Disabled,
     //         };
-        
+
     //         let parser = Parser::new(poly_simpl_config, config.cde_config, true);
     //         instance = parser.parse(&json_instance);
     //     } else {
@@ -151,7 +156,6 @@ fn main() {
     //     error!("Could not define if input is file or folder");
     //     panic!();
     // }
-    
 
     let rng = match config.prng_seed {
         Some(seed) => SmallRng::seed_from_u64(seed),
