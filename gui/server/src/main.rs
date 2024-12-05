@@ -2,10 +2,11 @@
 extern crate rocket;
 
 use std::sync::Mutex;
+use std::path::PathBuf;
 
 use rocket::form::Form;
-use rocket::fs::{relative, FileServer};
-use rocket::http::Method;
+use rocket::fs::{relative, FileServer, NamedFile};
+use rocket::http::{Method, Status};
 use rocket::response::{Flash, Redirect};
 use rocket::serde::{json::Json, Deserialize, Serialize};
 use rocket::State;
@@ -21,7 +22,7 @@ pub struct InputData {
 }
 
 #[post("/json", format = "json", data = "<input_data>")]
-async fn json(input_data: Json<InputData>, svg_state: &State<SvgFiles>) -> Result<String, String> {
+async fn json(input_data: Json<InputData>, svg_state: &State<SvgFiles>) -> Result<Json<Vec<String>>, String> {
     let json = input_data.into_inner();
     if json.json_str.is_empty() {
         return Err("JSON cannot be empty".to_string());
@@ -31,25 +32,40 @@ async fn json(input_data: Json<InputData>, svg_state: &State<SvgFiles>) -> Resul
     if svg_files.is_empty() {
         return Err("No solution found.".to_string());
     } else {
-        let mut state = svg_state.lock().expect("State lock poisoned");
-        *state = svg_files;
-        println!("SVG files: {:?}", state);
-        return Ok(state[0].clone());
+        // let mut state = svg_state.lock().expect("State lock poisoned");
+        // *state = svg_files;
+        println!("SVG files: {:?}", svg_files.clone());
+        return Ok(Json(svg_files.clone()));
     }
 }
 
-#[get("/file")]
-fn sol(svg_state: &State<SvgFiles>) {
-    let svg_files = svg_state.lock().expect("State lock poisoned");
-    let path = svg_files.get(0).unwrap();
-    let adjusted_path_svg = path.replace("/static", "");
-    let adjusted_path_json = path
-        .replace(".svg", ".json")
-        .replace("/static", "")
-        .replace("_0", "");
-    // let adjusted_path_svg = "/solutions/sol_web_0.svg";
-    println!("{}", adjusted_path_svg);
+#[get("/file?<path>")]
+async fn file(path: String) -> Result<NamedFile, Status> {
+    let file_path = PathBuf::from(path);
+
+    // Ensure the file exists and is accessible
+    if !file_path.exists() || !file_path.is_file() {
+        return Err(Status::NotFound);
+    }
+
+    // Serve the file
+    NamedFile::open(file_path)
+        .await
+        .map_err(|_| Status::InternalServerError)
 }
+
+// #[get("/file")]
+// fn sol(svg_state: &State<SvgFiles>) {
+//     let svg_files = svg_state.lock().expect("State lock poisoned");
+//     let path = svg_files.get(0).unwrap();
+//     let adjusted_path_svg = path.replace("/static", "");
+//     let adjusted_path_json = path
+//         .replace(".svg", ".json")
+//         .replace("/static", "")
+//         .replace("_0", "");
+//     // let adjusted_path_svg = "/solutions/sol_web_0.svg";
+//     println!("{}", adjusted_path_svg);
+// }
 
 #[launch]
 fn rocket() -> _ {
@@ -69,7 +85,7 @@ fn rocket() -> _ {
 
     rocket::build()
         .manage(SvgFiles::default()) // Initialize shared state.
-        .mount("/", routes![json, sol])
+        .mount("/", routes![json, file])
         .mount("/", FileServer::from(relative!("./static")))
         .attach(cors)
 }

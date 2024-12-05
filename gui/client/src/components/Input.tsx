@@ -43,8 +43,10 @@ const Input = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const jsonData = location.state?.jsonData;
-    const [items, setItems] = useState<Item[]>([]);
-    const [selected, setSelected] = useState<boolean[]>([]);
+    const [items, setItems] = useState<Item[]>(jsonData.Items);
+    const [selected, setSelected] = useState<boolean[]>(
+        new Array(jsonData.Items.length).fill(true)
+    );
 
     const handleSubmit = () => {
         const json: string = makeJSON(
@@ -60,7 +62,7 @@ const Input = () => {
             .post("http://localhost:8000/json", { json_str: json })
             .then((response) => {
                 console.log(response);
-                navigate("/result", response.data);
+                navigate("/result", { state: response.data });
             })
             .catch((err) => {
                 console.error(err);

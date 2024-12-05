@@ -196,20 +196,208 @@
       },
       "Value": null,
       "BaseQuality": null
+    },
+    {
+      "Demand": 4,
+      "Dxf": null,
+      "AllowedOrientations": [
+        0.0,
+        180.0
+      ],
+      "Shape": {
+        "Type": "SimplePolygon",
+        "Data": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            411.0,
+            65.0
+          ],
+          [
+            800.0,
+            0.0
+          ],
+          [
+            1189.0,
+            65.0
+          ],
+          [
+            1600.0,
+            0.0
+          ],
+          [
+            1500.0,
+            368.0
+          ],
+          [
+            800.0,
+            286.0
+          ],
+          [
+            100.0,
+            368.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "Value": null,
+      "BaseQuality": null
+    },
+    {
+      "Demand": 4,
+      "Dxf": null,
+      "AllowedOrientations": [
+        0.0,
+        180.0
+      ],
+      "Shape": {
+        "Type": "SimplePolygon",
+        "Data": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            936.0,
+            0.0
+          ],
+          [
+            936.0,
+            659.0
+          ],
+          [
+            0.0,
+            659.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "Value": null,
+      "BaseQuality": null
+    },
+    {
+      "Demand": 2,
+      "Dxf": null,
+      "AllowedOrientations": [
+        0.0,
+        180.0
+      ],
+      "Shape": {
+        "Type": "SimplePolygon",
+        "Data": [
+          [
+            56.0,
+            73.0
+          ],
+          [
+            1066.0,
+            143.0
+          ],
+          [
+            1891.0,
+            0.0
+          ],
+          [
+            2186.0,
+            288.0
+          ],
+          [
+            2573.0,
+            241.0
+          ],
+          [
+            2676.0,
+            926.0
+          ],
+          [
+            2594.0,
+            1366.0
+          ],
+          [
+            0.0,
+            1366.0
+          ],
+          [
+            56.0,
+            73.0
+          ]
+        ]
+      },
+      "Value": null,
+      "BaseQuality": null
+    },
+    {
+      "Demand": 2,
+      "Dxf": null,
+      "AllowedOrientations": [
+        0.0,
+        180.0
+      ],
+      "Shape": {
+        "Type": "SimplePolygon",
+        "Data": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            2499.0,
+            0.0
+          ],
+          [
+            2705.0,
+            387.0
+          ],
+          [
+            2622.0,
+            934.0
+          ],
+          [
+            2148.0,
+            967.0
+          ],
+          [
+            1920.0,
+            1152.0
+          ],
+          [
+            1061.0,
+            1059.0
+          ],
+          [
+            0.0,
+            1125.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "Value": null,
+      "BaseQuality": null
     }
   ],
   "Strip": {
     "Height": 4900.0
   },
   "Solution": {
-    "Usage": 0.7413828,
+    "Usage": 0.69430566,
     "RunTimeSec": 0,
     "Layouts": [
       {
         "Container": {
           "Type": "Strip",
           "Params": {
-            "Width": 7250.748,
+            "Width": 12538.38,
             "Height": 4900.0
           }
         },
@@ -217,20 +405,20 @@
           {
             "Index": 0,
             "Transformation": {
-              "Rotation": 0.0,
+              "Rotation": -3.1415925,
               "Translation": [
-                1.2988281,
-                1.7337646
+                3002.1787,
+                2266.4814
               ]
             }
           },
           {
             "Index": 0,
             "Transformation": {
-              "Rotation": -3.1415925,
+              "Rotation": 0.0,
               "Translation": [
-                3001.418,
-                4389.138
+                2.6481934,
+                2132.2068
               ]
             }
           },
@@ -239,28 +427,58 @@
             "Transformation": {
               "Rotation": 0.0,
               "Translation": [
-                1.2512207,
-                4395.6235
+                2.1635742,
+                4393.7603
               ]
             }
           },
           {
             "Index": 1,
             "Transformation": {
-              "Rotation": -3.1415925,
+              "Rotation": 0.0,
               "Translation": [
-                5790.3325,
-                261.5169
+                2782.2607,
+                2181.245
               ]
             }
           },
           {
-            "Index": 2,
+            "Index": 6,
+            "Transformation": {
+              "Rotation": 0.0,
+              "Translation": [
+                3002.1792,
+                0.061035156
+              ]
+            }
+          },
+          {
+            "Index": 6,
             "Transformation": {
               "Rotation": -3.1415925,
               "Translation": [
-                5066.436,
-                1962.4128
+                5619.548,
+                4145.1323
+              ]
+            }
+          },
+          {
+            "Index": 7,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                8241.413,
+                2179.1414
+              ]
+            }
+          },
+          {
+            "Index": 7,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                8315.094,
+                3391.4795
               ]
             }
           },
@@ -269,8 +487,8 @@
             "Transformation": {
               "Rotation": 0.0,
               "Translation": [
-                3001.5293,
-                1820.281
+                8242.162,
+                2.0842896
               ]
             }
           },
@@ -279,8 +497,8 @@
             "Transformation": {
               "Rotation": -3.1415925,
               "Translation": [
-                6680.653,
-                4899.5205
+                10174.921,
+                4899.594
               ]
             }
           },
@@ -289,8 +507,28 @@
             "Transformation": {
               "Rotation": -3.1415925,
               "Translation": [
-                7249.497,
-                1924.0449
+                10498.26,
+                3200.081
+              ]
+            }
+          },
+          {
+            "Index": 2,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                12536.216,
+                2136.2617
+              ]
+            }
+          },
+          {
+            "Index": 3,
+            "Transformation": {
+              "Rotation": 0.0,
+              "Translation": [
+                2572.4556,
+                4172.762
               ]
             }
           },
@@ -299,44 +537,114 @@
             "Transformation": {
               "Rotation": -3.1415925,
               "Translation": [
-                4204.601,
-                4899.9175
+                4742.361,
+                1674.7935
               ]
             }
           },
           {
             "Index": 3,
             "Transformation": {
-              "Rotation": 0.0,
+              "Rotation": -3.1415925,
               "Translation": [
-                4857.677,
-                1841.5764
+                4198.305,
+                4899.3823
               ]
             }
           },
           {
             "Index": 3,
             "Transformation": {
-              "Rotation": 0.0,
+              "Rotation": -3.1415925,
               "Translation": [
-                4992.5366,
-                2048.9048
+                4610.0195,
+                2747.709
               ]
             }
           },
           {
-            "Index": 3,
+            "Index": 4,
             "Transformation": {
               "Rotation": 0.0,
               "Translation": [
-                4984.305,
-                3026.2073
+                3002.7686,
+                1667.6138
+              ]
+            }
+          },
+          {
+            "Index": 4,
+            "Transformation": {
+              "Rotation": 0.0,
+              "Translation": [
+                3944.899,
+                4374.0806
+              ]
+            }
+          },
+          {
+            "Index": 4,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                5878.4175,
+                4426.6436
+              ]
+            }
+          },
+          {
+            "Index": 4,
+            "Transformation": {
+              "Rotation": 0.0,
+              "Translation": [
+                5511.0728,
+                1.0974274
+              ]
+            }
+          },
+          {
+            "Index": 5,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                6615.695,
+                1022.6693
+              ]
+            }
+          },
+          {
+            "Index": 5,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                6529.267,
+                4050.7883
+              ]
+            }
+          },
+          {
+            "Index": 5,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                6815.226,
+                4711.6978
+              ]
+            }
+          },
+          {
+            "Index": 5,
+            "Transformation": {
+              "Rotation": -3.1415925,
+              "Translation": [
+                7552.127,
+                1029.1527
               ]
             }
           }
         ],
         "Statistics": {
-          "Usage": 0.7413828
+          "Usage": 0.69430566
         }
       }
     ]
