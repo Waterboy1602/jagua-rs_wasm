@@ -15,7 +15,7 @@ use jagua_rs::io::parser;
 use jagua_rs::io::parser::Parser;
 use jagua_rs::util::polygon_simplification::PolySimplConfig;
 
-pub fn solve_json(input_json: String, path_sol: String) -> Vec<String> {
+pub fn solve_json(input_json: String, path_sol: String) -> Vec<Vec<String>> {
     let config = LBFConfig::default();
 
     let json_instance: JsonInstance;
@@ -44,17 +44,18 @@ pub fn solve_json(input_json: String, path_sol: String) -> Vec<String> {
         config: config.clone(),
     };
 
-    let solution_path = format!("{}sol_{}.json", path_sol, "web");
-    io::write_json_output(&json_output, Path::new(&solution_path));
+    let json_sol_path: String = format!("{}sol_{}.json", path_sol, "web");
+    io::write_json_output(&json_output, Path::new(&json_sol_path));
 
-    let mut svg_files = Vec::new();
+    let mut svg_sol_paths = Vec::new();
     for (i, s_layout) in solution.layout_snapshots.iter().enumerate() {
         let svg_path = format!("{}sol_{}_{}.svg", path_sol, "web", i);
         io::write_svg(
             &s_layout_to_svg(s_layout, &instance, config.svg_draw_options),
             Path::new(&svg_path),
         );
-        svg_files.push(svg_path);
+        svg_sol_paths.push(svg_path);
     }
-    svg_files
+
+    vec![svg_sol_paths.clone(), vec![json_sol_path.clone()]]
 }

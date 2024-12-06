@@ -22,18 +22,16 @@ pub struct InputData {
 }
 
 #[post("/json", format = "json", data = "<input_data>")]
-async fn json(input_data: Json<InputData>, svg_state: &State<SvgFiles>) -> Result<Json<Vec<String>>, String> {
+async fn json(input_data: Json<InputData>, svg_state: &State<SvgFiles>) -> Result<Json<Vec<Vec<String>>>, String> {
     let json = input_data.into_inner();
     if json.json_str.is_empty() {
         return Err("JSON cannot be empty".to_string());
     }
 
-    let svg_files = solve_json(json.json_str.clone(), "./static/solutions/".to_string());
+    let mut svg_files = solve_json(json.json_str.clone(), "static/solutions/".to_string());
     if svg_files.is_empty() {
         return Err("No solution found.".to_string());
     } else {
-        // let mut state = svg_state.lock().expect("State lock poisoned");
-        // *state = svg_files;
         println!("SVG files: {:?}", svg_files.clone());
         return Ok(Json(svg_files.clone()));
     }
@@ -83,9 +81,12 @@ fn rocket() -> _ {
     .to_cors()
     .expect("CORS configuration failed");
 
+
+    // TODO: fix the path to the static files
+    // Prevent access to all files in ./static
     rocket::build()
         .manage(SvgFiles::default()) // Initialize shared state.
         .mount("/", routes![json, file])
-        .mount("/", FileServer::from(relative!("./static")))
+        .mount("/", FileServer::from(relative!("./")))
         .attach(cors)
 }

@@ -1,24 +1,22 @@
 import { useLocation } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
 
-import "../style/input.css";
-
-// interface ResponseProps {
-//     data: string[]; // Array containing file paths
-// }
+import "../style/result.css";
 
 const Result = () => {
     const location = useLocation();
     const response: string = location.state;
 
-    const server: string = "http://localhost:8080";
+    const server: string = "http://localhost:8000/";
 
     console.log(response);
 
     const svgPath = response[0];
-    const jsonPath = response[1];
+    const jsonPath = response[1][0];
 
     return (
-        <div>
+        <div className="container result">
             <h1>Solution</h1>
 
             <a
@@ -26,12 +24,12 @@ const Result = () => {
                 download="solution.json"
                 className="btn"
             >
-                <i className="fa fa-download"></i>
-                JSON
+                <FontAwesomeIcon icon={faDownload} />
+                &nbsp;&nbsp;JSON
             </a>
 
             <div className="container solution">
-                <img src={`${server}${svgPath}`} />
+                <img src={`${server}${svgPath[0]}`} />
             </div>
         </div>
     );
