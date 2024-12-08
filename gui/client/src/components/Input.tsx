@@ -5,7 +5,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "../style/input.css";
 
 interface Shape {
-    Data: boolean[][];
+    Type: string;
+    Data: number[][];
 }
 
 interface Item {
@@ -75,18 +76,29 @@ const Input = () => {
         setSelected(newSelected);
     };
 
-    const renderShape = (shape: Shape) => (
-        <div>
-            <b>Data:</b>
-            <ul>
-                {shape.Data.map((point: boolean[], index: number) => (
-                    <li key={index}>
-                        ({point[0]}, {point[1]})
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
+    const SvgComponent = ({ shape }: { shape: Shape }) => {
+        const maxX = Math.max(...shape.Data.map((p) => p[0]));
+        const maxY = Math.max(...shape.Data.map((p) => p[1]));
+        const points = shape.Data.map((p) => `${p[0]},${p[1]}`).join(" ");
+
+        return (
+            <div className="svg-container">
+                <b>Shape:</b>
+                <svg
+                    viewBox={`-50 -50 ${maxX + 100} ${maxY + 100}`}
+                    preserveAspectRatio="xMidYMid meet"
+                >
+                    <polyline
+                        points={points}
+                        fill="none"
+                        stroke="black"
+                        strokeWidth="2"
+                        vector-effect="non-scaling-stroke"
+                    />
+                </svg>
+            </div>
+        );
+    };
 
     const renderItems = (items: Item[], selected: boolean[]) => {
         return items.map((item, index: number) => (
@@ -159,7 +171,7 @@ const Input = () => {
                         <br />
                     </p>
 
-                    <div>{renderShape(item.Shape)}</div>
+                    <SvgComponent shape={item.Shape} />
                 </div>
             </>
         ));
