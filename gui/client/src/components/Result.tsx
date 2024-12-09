@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 
-import "../style/result.css";
+import styles from "../style/Result.module.css";
 
 const Result = () => {
     const location = useLocation();
@@ -16,19 +16,19 @@ const Result = () => {
     const jsonPath = response[1][0];
 
     return (
-        <div className="container result">
+        <div className={`${styles.container} ${styles.result}`}>
             <h1>Solution</h1>
 
             <a
                 href={`${server}${jsonPath}`}
                 download="solution.json"
-                className="btn"
+                className={styles.btn}
             >
                 <FontAwesomeIcon icon={faDownload} />
                 &nbsp;&nbsp;JSON
             </a>
 
-            <div className="container solution">
+            <div className={`${styles.container} ${styles.solution}`}>
                 <img src={`${server}${svgPath[0]}`} />
             </div>
         </div>

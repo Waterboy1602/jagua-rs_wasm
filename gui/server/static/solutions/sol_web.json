@@ -1,75 +1,57 @@
 {
-  "Name": "albano",
+  "Name": "mao",
   "Items": [
     {
       "Demand": 2,
       "Dxf": null,
       "AllowedOrientations": [
         0.0,
-        180.0
+        90.0,
+        180.0,
+        270.0
       ],
       "Shape": {
         "Type": "SimplePolygon",
         "Data": [
           [
-            0.0,
-            86.0
+            10.0,
+            115.0
           ],
           [
-            966.0,
-            142.0
+            478.0,
+            113.0
           ],
           [
-            1983.0,
+            727.0,
+            21.0
+          ],
+          [
+            856.0,
+            44.0
+          ],
+          [
+            930.0,
+            47.0
+          ],
+          [
+            1049.0,
             0.0
           ],
           [
-            2185.0,
-            238.0
+            1097.0,
+            295.0
           ],
           [
-            2734.0,
-            217.0
-          ],
-          [
-            3000.0,
-            767.0
-          ],
-          [
-            2819.0,
-            900.0
-          ],
-          [
-            2819.0,
-            1360.0
-          ],
-          [
-            3000.0,
-            1493.0
-          ],
-          [
-            2734.0,
-            2043.0
-          ],
-          [
-            2185.0,
-            2022.0
-          ],
-          [
-            1983.0,
-            2260.0
-          ],
-          [
-            966.0,
-            2118.0
+            1078.0,
+            396.0
           ],
           [
             0.0,
-            2174.0
+            407.0
           ],
           [
-            0.0,
-            86.0
+            10.0,
+            115.0
           ]
         ]
       },
@@ -81,7 +63,9 @@
       "Dxf": null,
       "AllowedOrientations": [
         0.0,
-        180.0
+        90.0,
+        180.0,
+        270.0
       ],
       "Shape": {
         "Type": "SimplePolygon",
@@ -91,290 +75,16 @@
             0.0
           ],
           [
-            3034.0,
-            0.0
+            316.0,
+            2.0
           ],
           [
-            3034.0,
-            261.0
-          ],
-          [
-            0.0,
-            261.0
+            316.0,
+            274.0
           ],
           [
             0.0,
-            0.0
-          ]
-        ]
-      },
-      "Value": null,
-      "BaseQuality": null
-    },
-    {
-      "Demand": 4,
-      "Dxf": null,
-      "AllowedOrientations": [
-        0.0,
-        180.0
-      ],
-      "Shape": {
-        "Type": "SimplePolygon",
-        "Data": [
-          [
-            0.0,
-            173.0
-          ],
-          [
-            1761.0,
-            0.0
-          ],
-          [
-            2183.0,
-            650.0
-          ],
-          [
-            2183.0,
-            1010.0
-          ],
-          [
-            1761.0,
-            1660.0
-          ],
-          [
-            0.0,
-            1487.0
-          ],
-          [
-            0.0,
-            173.0
-          ]
-        ]
-      },
-      "Value": null,
-      "BaseQuality": null
-    },
-    {
-      "Demand": 4,
-      "Dxf": null,
-      "AllowedOrientations": [
-        0.0,
-        180.0
-      ],
-      "Shape": {
-        "Type": "SimplePolygon",
-        "Data": [
-          [
-            74.0,
-            0.0
-          ],
-          [
-            870.0,
-            119.0
-          ],
-          [
-            1666.0,
-            0.0
-          ],
-          [
-            1740.0,
-            125.0
-          ],
-          [
-            870.0,
-            305.0
-          ],
-          [
-            0.0,
-            125.0
-          ],
-          [
-            74.0,
-            0.0
-          ]
-        ]
-      },
-      "Value": null,
-      "BaseQuality": null
-    },
-    {
-      "Demand": 4,
-      "Dxf": null,
-      "AllowedOrientations": [
-        0.0,
-        180.0
-      ],
-      "Shape": {
-        "Type": "SimplePolygon",
-        "Data": [
-          [
-            0.0,
-            0.0
-          ],
-          [
-            411.0,
-            65.0
-          ],
-          [
-            800.0,
-            0.0
-          ],
-          [
-            1189.0,
-            65.0
-          ],
-          [
-            1600.0,
-            0.0
-          ],
-          [
-            1500.0,
-            368.0
-          ],
-          [
-            800.0,
-            286.0
-          ],
-          [
-            100.0,
-            368.0
-          ],
-          [
-            0.0,
-            0.0
-          ]
-        ]
-      },
-      "Value": null,
-      "BaseQuality": null
-    },
-    {
-      "Demand": 4,
-      "Dxf": null,
-      "AllowedOrientations": [
-        0.0,
-        180.0
-      ],
-      "Shape": {
-        "Type": "SimplePolygon",
-        "Data": [
-          [
-            0.0,
-            0.0
-          ],
-          [
-            936.0,
-            0.0
-          ],
-          [
-            936.0,
-            659.0
-          ],
-          [
-            0.0,
-            659.0
-          ],
-          [
-            0.0,
-            0.0
-          ]
-        ]
-      },
-      "Value": null,
-      "BaseQuality": null
-    },
-    {
-      "Demand": 2,
-      "Dxf": null,
-      "AllowedOrientations": [
-        0.0,
-        180.0
-      ],
-      "Shape": {
-        "Type": "SimplePolygon",
-        "Data": [
-          [
-            56.0,
-            73.0
-          ],
-          [
-            1066.0,
-            143.0
-          ],
-          [
-            1891.0,
-            0.0
-          ],
-          [
-            2186.0,
-            288.0
-          ],
-          [
-            2573.0,
-            241.0
-          ],
-          [
-            2676.0,
-            926.0
-          ],
-          [
-            2594.0,
-            1366.0
-          ],
-          [
-            0.0,
-            1366.0
-          ],
-          [
-            56.0,
-            73.0
-          ]
-        ]
-      },
-      "Value": null,
-      "BaseQuality": null
-    },
-    {
-      "Demand": 2,
-      "Dxf": null,
-      "AllowedOrientations": [
-        0.0,
-        180.0
-      ],
-      "Shape": {
-        "Type": "SimplePolygon",
-        "Data": [
-          [
-            0.0,
-            0.0
-          ],
-          [
-            2499.0,
-            0.0
-          ],
-          [
-            2705.0,
-            387.0
-          ],
-          [
-            2622.0,
-            934.0
-          ],
-          [
-            2148.0,
-            967.0
-          ],
-          [
-            1920.0,
-            1152.0
-          ],
-          [
-            1061.0,
-            1059.0
-          ],
-          [
-            0.0,
-            1125.0
+            275.0
           ],
           [
             0.0,
@@ -387,264 +97,64 @@
     }
   ],
   "Strip": {
-    "Height": 4900.0
+    "Height": 2550.0
   },
   "Solution": {
-    "Usage": 0.69430566,
+    "Usage": 0.50673944,
     "RunTimeSec": 0,
     "Layouts": [
       {
         "Container": {
           "Type": "Strip",
           "Params": {
-            "Width": 12538.38,
-            "Height": 4900.0
+            "Width": 674.40234,
+            "Height": 2550.0
           }
         },
         "PlacedItems": [
           {
             "Index": 0,
             "Transformation": {
-              "Rotation": -3.1415925,
+              "Rotation": -1.5707964,
               "Translation": [
-                3002.1787,
-                2266.4814
+                0.1164093,
+                1098.0095
               ]
             }
           },
           {
             "Index": 0,
             "Transformation": {
-              "Rotation": 0.0,
+              "Rotation": 1.5707964,
               "Translation": [
-                2.6481934,
-                2132.2068
+                407.1447,
+                1084.1976
               ]
             }
           },
           {
             "Index": 1,
             "Transformation": {
-              "Rotation": 0.0,
+              "Rotation": -1.5707964,
               "Translation": [
-                2.1635742,
-                4393.7603
+                0.27812195,
+                2497.701
               ]
             }
           },
           {
             "Index": 1,
             "Transformation": {
-              "Rotation": 0.0,
+              "Rotation": -1.5707964,
               "Translation": [
-                2782.2607,
-                2181.245
-              ]
-            }
-          },
-          {
-            "Index": 6,
-            "Transformation": {
-              "Rotation": 0.0,
-              "Translation": [
-                3002.1792,
-                0.061035156
-              ]
-            }
-          },
-          {
-            "Index": 6,
-            "Transformation": {
-              "Rotation": -3.1415925,
-              "Translation": [
-                5619.548,
-                4145.1323
-              ]
-            }
-          },
-          {
-            "Index": 7,
-            "Transformation": {
-              "Rotation": -3.1415925,
-              "Translation": [
-                8241.413,
-                2179.1414
-              ]
-            }
-          },
-          {
-            "Index": 7,
-            "Transformation": {
-              "Rotation": -3.1415925,
-              "Translation": [
-                8315.094,
-                3391.4795
-              ]
-            }
-          },
-          {
-            "Index": 2,
-            "Transformation": {
-              "Rotation": 0.0,
-              "Translation": [
-                8242.162,
-                2.0842896
-              ]
-            }
-          },
-          {
-            "Index": 2,
-            "Transformation": {
-              "Rotation": -3.1415925,
-              "Translation": [
-                10174.921,
-                4899.594
-              ]
-            }
-          },
-          {
-            "Index": 2,
-            "Transformation": {
-              "Rotation": -3.1415925,
-              "Translation": [
-                10498.26,
-                3200.081
-              ]
-            }
-          },
-          {
-            "Index": 2,
-            "Transformation": {
-              "Rotation": -3.1415925,
-              "Translation": [
-                12536.216,
-                2136.2617
-              ]
-            }
-          },
-          {
-            "Index": 3,
-            "Transformation": {
-              "Rotation": 0.0,
-              "Translation": [
-                2572.4556,
-                4172.762
-              ]
-            }
-          },
-          {
-            "Index": 3,
-            "Transformation": {
-              "Rotation": -3.1415925,
-              "Translation": [
-                4742.361,
-                1674.7935
-              ]
-            }
-          },
-          {
-            "Index": 3,
-            "Transformation": {
-              "Rotation": -3.1415925,
-              "Translation": [
-                4198.305,
-                4899.3823
-              ]
-            }
-          },
-          {
-            "Index": 3,
-            "Transformation": {
-              "Rotation": -3.1415925,
-              "Translation": [
-                4610.0195,
-                2747.709
-              ]
-            }
-          },
-          {
-            "Index": 4,
-            "Transformation": {
-              "Rotation": 0.0,
-              "Translation": [
-                3002.7686,
-                1667.6138
-              ]
-            }
-          },
-          {
-            "Index": 4,
-            "Transformation": {
-              "Rotation": 0.0,
-              "Translation": [
-                3944.899,
-                4374.0806
-              ]
-            }
-          },
-          {
-            "Index": 4,
-            "Transformation": {
-              "Rotation": -3.1415925,
-              "Translation": [
-                5878.4175,
-                4426.6436
-              ]
-            }
-          },
-          {
-            "Index": 4,
-            "Transformation": {
-              "Rotation": 0.0,
-              "Translation": [
-                5511.0728,
-                1.0974274
-              ]
-            }
-          },
-          {
-            "Index": 5,
-            "Transformation": {
-              "Rotation": -3.1415925,
-              "Translation": [
-                6615.695,
-                1022.6693
-              ]
-            }
-          },
-          {
-            "Index": 5,
-            "Transformation": {
-              "Rotation": -3.1415925,
-              "Translation": [
-                6529.267,
-                4050.7883
-              ]
-            }
-          },
-          {
-            "Index": 5,
-            "Transformation": {
-              "Rotation": -3.1415925,
-              "Translation": [
-                6815.226,
-                4711.6978
-              ]
-            }
-          },
-          {
-            "Index": 5,
-            "Transformation": {
-              "Rotation": -3.1415925,
-              "Translation": [
-                7552.127,
-                1029.1527
+                399.28595,
+                316.2885
               ]
             }
           }
         ],
         "Statistics": {
-          "Usage": 0.69430566
+          "Usage": 0.50673944
         }
       }
     ]

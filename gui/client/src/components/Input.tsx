@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import "../style/input.css";
+import styles from "../style/Input.module.css";
 
 interface Strip {
     Height: number;
@@ -87,12 +87,11 @@ const Input = () => {
         const points = shape.Data.map((p) => `${p[0]},${p[1]}`).join(" ");
 
         return (
-            <div className="svg-container">
+            <div className={styles.svgContainer}>
                 <div>
-                    <b>Shape:</b>
-                    <br />
+                    <p>Shape:</p>
 
-                    <div className="shape">
+                    <div className={styles.shape}>
                         <ul>
                             {shape.Data.map(
                                 (point: number[], index: number) => (
@@ -113,7 +112,7 @@ const Input = () => {
                         fill="none"
                         stroke="black"
                         strokeWidth="2"
-                        vector-effect="non-scaling-stroke"
+                        vectorEffect="non-scaling-stroke"
                     />
                 </svg>
             </div>
@@ -122,28 +121,21 @@ const Input = () => {
 
     const renderItems = (items: Item[], selected: boolean[]) => {
         return items.map((item, index: number) => (
-            <>
+            <div key={`item-${index}`}>
                 <div
-                    key={index}
-                    className="item"
+                    className={styles.item}
                     style={{
                         outline: selected[index]
                             ? "3px solid black"
                             : "1px solid black",
-                        boxSizing: "border-box",
                     }}
                 >
                     <div
-                        className="checkbox-container"
+                        className={styles.checkboxContainer}
                         onClick={() => handleCheckboxChange(index)}
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            cursor: "pointer",
-                        }}
                     >
                         <input
-                            className="boolean"
+                            className={styles.boolean}
                             type="checkbox"
                             checked={selected[index]}
                             onChange={() => handleCheckboxChange(index)}
@@ -155,10 +147,10 @@ const Input = () => {
 
                     <hr />
 
-                    <p>
-                        <b>Demand:</b>
+                    <div className={styles.itemValue}>
+                        <p>Demand:</p>
                         <input
-                            className="number"
+                            className={styles.number}
                             type="number"
                             value={item.Demand}
                             onChange={(e) => {
@@ -169,12 +161,12 @@ const Input = () => {
                                 setItems(newItems);
                             }}
                         />
-                    </p>
+                    </div>
 
-                    <p>
-                        <b>Max demand:</b>
+                    <div className={styles.itemValue}>
+                        <p>Max demand:</p>
                         <input
-                            className="number"
+                            className={styles.number}
                             type="number"
                             value={item.DemandMax}
                             onChange={(e) => {
@@ -185,62 +177,74 @@ const Input = () => {
                                 setItems(newItems);
                             }}
                         />
-                    </p>
+                    </div>
 
-                    <p>
-                        <b>Allowed orientations:</b>
-                        {item.AllowedOrientations.map(
-                            (orientation: number, idx: number) => (
-                                <div className="degree-symbol-wrapper">
-                                    <input
-                                        key={idx}
-                                        className="number"
-                                        type="number"
-                                        value={orientation}
-                                        onChange={(e) => {
-                                            const newItems = [...items];
-                                            newItems[index].AllowedOrientations[
-                                                index
-                                            ] = parseInt(e.target.value);
-                                            setItems(newItems);
-                                        }}
-                                    />
-                                </div>
-                            )
-                        )}
-                        <br />
-                    </p>
+                    <div className={styles.itemValue}>
+                        <p>Orientations:</p>
+                        <div>
+                            {item.AllowedOrientations.map(
+                                (orientation: number, idx: number) => (
+                                    <div
+                                        className={styles.degreeSymbolWrapper}
+                                        key={`orientation-${index}-${idx}`}
+                                    >
+                                        <input
+                                            className={styles.number}
+                                            type="number"
+                                            value={orientation}
+                                            onChange={(e) => {
+                                                const newItems = [...items];
+                                                newItems[
+                                                    index
+                                                ].AllowedOrientations[index] =
+                                                    parseInt(e.target.value);
+                                                setItems(newItems);
+                                            }}
+                                        />
+                                    </div>
+                                )
+                            )}
+                        </div>
+                    </div>
 
-                    <SvgComponent shape={item.Shape} />
+                    <SvgComponent key={`svg-${index}`} shape={item.Shape} />
                 </div>
-            </>
+            </div>
         ));
     };
 
     return (
-        <div className="container input">
-            <div className="title">
-                <h1>JSON Overview - {jsonData.Name}</h1>
+        <div className={styles.container}>
+            <div className={styles.title}>
+                <h1>{jsonData.Name}.json</h1>
 
-                <button className="submit" type="submit" onClick={handleSubmit}>
-                    Submit
+                <button
+                    className={styles.submit}
+                    type="submit"
+                    onClick={handleSubmit}
+                >
+                    Calculate
                 </button>
             </div>
 
-            <div className="container items">
+            <div className={styles.items}>
                 <div
-                    className="item"
+                    className={styles.item}
                     style={{
                         border: "3px solid black",
                         boxSizing: "border-box",
                     }}
                 >
-                    <h3>{jsonData.Strip ? "Strip" : "Bin"}</h3>
+                    <div
+                        className={`${styles.checkboxContainer} ${styles.strip}`}
+                    >
+                        <h3>{jsonData.Strip ? "Strip" : "Bin"}</h3>
+                    </div>
                     <hr />
-                    <p>
+                    <div>
                         <b>Height: </b>
                         <input
-                            className="number strip"
+                            className={`${styles.number} ${styles.strip}`}
                             type="number"
                             value={jsonData.Strip.Height}
                             onChange={(e) => {
@@ -249,7 +253,7 @@ const Input = () => {
                                 });
                             }}
                         />
-                    </p>
+                    </div>
                 </div>
                 {renderItems(jsonData.Items, selected)}
             </div>
