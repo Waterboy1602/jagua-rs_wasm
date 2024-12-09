@@ -4,6 +4,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import "../style/input.css";
 
+interface Strip {
+    Height: number;
+}
 interface Shape {
     Type: string;
     Data: number[][];
@@ -20,11 +23,12 @@ const makeJSON = (
     name: string,
     items: Item[],
     selected: boolean[],
-    strip: string
+    strip: Strip
 ): string => {
-    const jsonObj: { Name?: string; Items?: Item[]; Strip?: string } = {
+    const jsonObj: { Name?: string; Items?: Item[]; Strip?: Strip } = {
         Name: "",
         Items: [],
+        Strip: { Height: 0 },
     };
 
     jsonObj["Name"] = name;
@@ -48,13 +52,14 @@ const Input = () => {
     const [selected, setSelected] = useState<boolean[]>(
         new Array(jsonData.Items.length).fill(true)
     );
+    const [stripHeight, setStripHeight] = useState<Strip>(jsonData.Strip);
 
     const handleSubmit = () => {
         const json: string = makeJSON(
             jsonData.Name,
             items,
             selected,
-            jsonData.Strip
+            stripHeight
         );
 
         console.log(json);
@@ -83,7 +88,22 @@ const Input = () => {
 
         return (
             <div className="svg-container">
-                <b>Shape:</b>
+                <div>
+                    <b>Shape:</b>
+                    <br />
+
+                    <div className="shape">
+                        <ul>
+                            {shape.Data.map(
+                                (point: number[], index: number) => (
+                                    <li key={index}>
+                                        ({point[0]}, {point[1]})
+                                    </li>
+                                )
+                            )}
+                        </ul>
+                    </div>
+                </div>
                 <svg
                     viewBox={`-50 -50 ${maxX + 100} ${maxY + 100}`}
                     preserveAspectRatio="xMidYMid meet"
@@ -103,13 +123,31 @@ const Input = () => {
     const renderItems = (items: Item[], selected: boolean[]) => {
         return items.map((item, index: number) => (
             <>
-                <div key={index} className="item">
-                    <div>
+                <div
+                    key={index}
+                    className="item"
+                    style={{
+                        outline: selected[index]
+                            ? "3px solid black"
+                            : "1px solid black",
+                        boxSizing: "border-box",
+                    }}
+                >
+                    <div
+                        className="checkbox-container"
+                        onClick={() => handleCheckboxChange(index)}
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            cursor: "pointer",
+                        }}
+                    >
                         <input
                             className="boolean"
                             type="checkbox"
                             checked={selected[index]}
                             onChange={() => handleCheckboxChange(index)}
+                            style={{ marginRight: "10px" }}
                         />
 
                         <h3>Item {index + 1}</h3>
@@ -134,7 +172,7 @@ const Input = () => {
                     </p>
 
                     <p>
-                        <b>Demand Max:</b>
+                        <b>Max demand:</b>
                         <input
                             className="number"
                             type="number"
@@ -150,22 +188,24 @@ const Input = () => {
                     </p>
 
                     <p>
-                        <b>Allowed Orientations:</b>
+                        <b>Allowed orientations:</b>
                         {item.AllowedOrientations.map(
                             (orientation: number, idx: number) => (
-                                <input
-                                    key={idx}
-                                    className="number"
-                                    type="number"
-                                    value={orientation}
-                                    onChange={(e) => {
-                                        const newItems = [...items];
-                                        newItems[index].AllowedOrientations[
-                                            index
-                                        ] = parseInt(e.target.value);
-                                        setItems(newItems);
-                                    }}
-                                />
+                                <div className="degree-symbol-wrapper">
+                                    <input
+                                        key={idx}
+                                        className="number"
+                                        type="number"
+                                        value={orientation}
+                                        onChange={(e) => {
+                                            const newItems = [...items];
+                                            newItems[index].AllowedOrientations[
+                                                index
+                                            ] = parseInt(e.target.value);
+                                            setItems(newItems);
+                                        }}
+                                    />
+                                </div>
                             )
                         )}
                         <br />
@@ -188,6 +228,29 @@ const Input = () => {
             </div>
 
             <div className="container items">
+                <div
+                    className="item"
+                    style={{
+                        border: "3px solid black",
+                        boxSizing: "border-box",
+                    }}
+                >
+                    <h3>{jsonData.Strip ? "Strip" : "Bin"}</h3>
+                    <hr />
+                    <p>
+                        <b>Height: </b>
+                        <input
+                            className="number strip"
+                            type="number"
+                            value={jsonData.Strip.Height}
+                            onChange={(e) => {
+                                setStripHeight({
+                                    Height: parseInt(e.target.value),
+                                });
+                            }}
+                        />
+                    </p>
+                </div>
                 {renderItems(jsonData.Items, selected)}
             </div>
         </div>
