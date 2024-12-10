@@ -1,25 +1,11 @@
 import { useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Config, Input, Strip, Shape, Item } from "../interfaces/interfaces";
 
-import styles from "../style/Input.module.css";
+import styles from "../styles/Input.module.css";
 
-interface Strip {
-    Height: number;
-}
-interface Shape {
-    Type: string;
-    Data: number[][];
-}
-
-interface Item {
-    Demand: number;
-    DemandMax: number;
-    AllowedOrientations: number[];
-    Shape: Shape;
-}
-
-const makeJSON = (
+const makeInput = (
     name: string,
     items: Item[],
     selected: boolean[],
@@ -47,25 +33,32 @@ const makeJSON = (
 const Input = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const jsonData = location.state?.jsonData;
-    const [items, setItems] = useState<Item[]>(jsonData.Items);
+    const input = location.state?.input;
+    const config = location.state?.config;
+
+    const [items, setItems] = useState<Item[]>(input.Items);
     const [selected, setSelected] = useState<boolean[]>(
-        new Array(jsonData.Items.length).fill(true)
+        new Array(input.Items.length).fill(true)
     );
-    const [stripHeight, setStripHeight] = useState<Strip>(jsonData.Strip);
+    const [stripHeight, setStripHeight] = useState<Strip>(input.Strip);
 
     const handleSubmit = () => {
-        const json: string = makeJSON(
-            jsonData.Name,
+        const configJson: string = makeConfig(stripHeight);
+
+        const inputJson: string = makeInput(
+            input.Name,
             items,
             selected,
             stripHeight
         );
 
-        console.log(json);
+        console.log(inputJson);
 
         axios
-            .post("http://localhost:8000/json", { json_str: json })
+            .post("http://localhost:8000/json", {
+                config: configJson,
+                json_str: inputJson,
+            })
             .then((response) => {
                 console.log(response);
                 navigate("/result", { state: response.data });
@@ -251,7 +244,7 @@ const Input = () => {
     return (
         <div className={styles.container}>
             <div className={styles.title}>
-                <h1>{jsonData.Name}.json</h1>
+                <h1>{input.Name}.json</h1>
 
                 <button
                     className={styles.submit}
@@ -273,7 +266,7 @@ const Input = () => {
                     <div
                         className={`${styles.checkboxContainer} ${styles.strip}`}
                     >
-                        <h3>{jsonData.Strip ? "Strip" : "Bin"}</h3>
+                        <h3>{input.Strip ? "Strip" : "Bin"}</h3>
                     </div>
                     <hr />
                     <div>
@@ -281,7 +274,7 @@ const Input = () => {
                         <input
                             className={`${styles.number} ${styles.strip}`}
                             type="number"
-                            value={jsonData.Strip.Height}
+                            value={input.Strip.Height}
                             onChange={(e) => {
                                 setStripHeight({
                                     Height: parseInt(e.target.value),
@@ -290,7 +283,7 @@ const Input = () => {
                         />
                     </div>
                 </div>
-                {renderItems(jsonData.Items, selected)}
+                {renderItems(input.Items, selected)}
             </div>
         </div>
     );

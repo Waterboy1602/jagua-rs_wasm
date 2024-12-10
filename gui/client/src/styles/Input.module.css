@@ -108,8 +108,8 @@ input.number.strip {
 .shape {
     width: 150px;
     height: 100px;
-    overflow: auto; /* Make the div scrollable */
-    word-wrap: break-word; /* Ensure text stays inside the div */
+    overflow: auto;
+    word-wrap: break-word;
 }
 
 .shape > ul {

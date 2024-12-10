@@ -2,31 +2,53 @@ import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
+import { Config } from "../interfaces/interfaces";
 
-import styles from "../style/Header.module.css";
+import styles from "../styles/Header.module.css";
 
 const Header = () => {
     const [showSettings, setShowSettings] = useState(false);
+    const [config, setConfig] = useState<Config>({
+        quadtreeDepth: 5,
+        hpgNCells: 2000,
+        poleCoverageGoal: 90,
+        maxPoles: 10,
+        nFFPoles: 2,
+        nFFPiers: 0,
+        polySimplTolerance: 0.1,
+        prngSeed: 0,
+        nSamples: 5000,
+        lsFrac: 2,
+    });
 
-    const toggleSettings = () => {
+    const toggleConfig = () => {
         setShowSettings(!showSettings);
     };
 
-    const settings = {
-        cde_config: {
-            quadtree_depth: 5,
-            hpg_n_cells: 2000,
-            item_surrogate_config: {
-                pole_coverage_goal: 0.9,
-                max_poles: 10,
-                n_ff_poles: 2,
-                n_ff_piers: 0,
-            },
-        },
-        poly_simpl_tolerance: 0.001,
-        prng_seed: 0,
-        n_samples: 5000,
-        ls_frac: 0.2,
+    const closeConfig = () => {
+        setShowSettings(false);
+    };
+
+    const saveConfig = () => {
+        // Add logic to save settings here
+        const form = document.querySelector("form");
+        if (form) {
+            const formData = new FormData(form);
+            const newConfig: Config = {
+                quadtreeDepth: Number(formData.get("quadtreeDepth")),
+                hpgNCells: Number(formData.get("hpgNCells")),
+                poleCoverageGoal: Number(formData.get("poleCoverageGoal")),
+                maxPoles: Number(formData.get("maxPoles")),
+                nFFPoles: Number(formData.get("nFFPoles")),
+                nFFPiers: Number(formData.get("nFFPiers")),
+                polySimplTolerance: Number(formData.get("polySimplTolerance")),
+                prngSeed: Number(formData.get("prngSeed")),
+                nSamples: Number(formData.get("nSamples")),
+                lsFrac: Number(formData.get("lsFrac")),
+            };
+            setConfig(newConfig);
+        }
+        closeConfig();
     };
 
     return (
@@ -35,111 +57,136 @@ const Header = () => {
                 <img src="./jaguars_logo.svg" alt="jagua-rs logo" />
                 <h1>jagua-rs</h1>
             </Link>
-            <FontAwesomeIcon icon={faGear} size="3x" onClick={toggleSettings} />
+            <FontAwesomeIcon
+                icon={faGear}
+                size="3x"
+                onClick={toggleConfig}
+                style={{ color: "#333", cursor: "pointer" }}
+            />
 
             {showSettings && (
                 <div className={styles.settingsPanel}>
                     <h2>Settings</h2>
                     <form>
-                        <fieldset>
-                            <legend>CDE Config</legend>
-                            <label>
-                                Quadtree Depth:
-                                <input
-                                    type="number"
-                                    defaultValue={
-                                        settings.cde_config.quadtree_depth
-                                    }
-                                />
-                            </label>
-                            <label>
-                                HPG N Cells:
-                                <input
-                                    type="number"
-                                    defaultValue={
-                                        settings.cde_config.hpg_n_cells
-                                    }
-                                />
-                            </label>
-                            <fieldset>
-                                <legend>Item Surrogate Config</legend>
-                                <label>
-                                    Pole Coverage Goal:
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        defaultValue={
-                                            settings.cde_config
-                                                .item_surrogate_config
-                                                .pole_coverage_goal
-                                        }
-                                    />
-                                </label>
-                                <label>
-                                    Max Poles:
-                                    <input
-                                        type="number"
-                                        defaultValue={
-                                            settings.cde_config
-                                                .item_surrogate_config.max_poles
-                                        }
-                                    />
-                                </label>
-                                <label>
-                                    N FF Poles:
-                                    <input
-                                        type="number"
-                                        defaultValue={
-                                            settings.cde_config
-                                                .item_surrogate_config
-                                                .n_ff_poles
-                                        }
-                                    />
-                                </label>
-                                <label>
-                                    N FF Piers:
-                                    <input
-                                        type="number"
-                                        defaultValue={
-                                            settings.cde_config
-                                                .item_surrogate_config
-                                                .n_ff_piers
-                                        }
-                                    />
-                                </label>
-                            </fieldset>
-                        </fieldset>
+                        <h3>Config of Collision Detection Engine</h3>
                         <label>
-                            Poly Simpl Tolerance:
                             <input
                                 type="number"
-                                step="0.0001"
-                                defaultValue={settings.poly_simpl_tolerance}
+                                defaultValue={config.quadtreeDepth}
+                                className={styles.input}
                             />
+                            Quadtree depth
                         </label>
+
                         <label>
-                            PRNG Seed:
                             <input
                                 type="number"
-                                defaultValue={settings.prng_seed}
+                                defaultValue={config.hpgNCells}
+                                className={styles.input}
                             />
+                            #Cells of the hazard proximity grid
                         </label>
+
+                        <h3>Config surrogate item</h3>
                         <label>
-                            N Samples:
                             <input
                                 type="number"
-                                defaultValue={settings.n_samples}
+                                step="1"
+                                defaultValue={config.poleCoverageGoal}
+                                className={styles.input}
+                                min="0"
+                                max="100"
                             />
+                            Pole coverage goal
                         </label>
+
                         <label>
-                            LS Fraction:
+                            <input
+                                type="number"
+                                defaultValue={config.maxPoles}
+                                className={styles.input}
+                            />
+                            Max #poles
+                        </label>
+
+                        <label>
+                            <input
+                                type="number"
+                                defaultValue={config.nFFPoles}
+                                className={styles.input}
+                            />
+                            #Poles for fail-fast collision detection
+                        </label>
+
+                        <label>
+                            <input
+                                type="number"
+                                defaultValue={config.nFFPiers}
+                                className={styles.input}
+                            />
+                            #Piers for fail-fast collision detection
+                        </label>
+
+                        <hr />
+
+                        <label>
                             <input
                                 type="number"
                                 step="0.01"
-                                defaultValue={settings.ls_frac}
+                                defaultValue={config.polySimplTolerance}
+                                className={styles.input}
+                                min="0"
+                                max="100"
                             />
+                            Polygon simplify tolerance
                         </label>
-                        <button type="submit">Save</button>
+
+                        <label>
+                            <input
+                                type="number"
+                                defaultValue={config.prngSeed}
+                                className={styles.input}
+                            />
+                            PRNG Seed
+                        </label>
+
+                        <label>
+                            <input
+                                type="number"
+                                defaultValue={config.nSamples}
+                                className={styles.input}
+                            />
+                            #Samples
+                        </label>
+
+                        <label>
+                            <input
+                                type="number"
+                                step="1"
+                                defaultValue={config.lsFrac}
+                                className={styles.input}
+                                min="0"
+                                max="100"
+                            />
+                            Local search fraction
+                        </label>
+
+                        <div className={styles.buttons}>
+                            <button
+                                type="button"
+                                className={styles.closeButton}
+                                onClick={closeConfig}
+                            >
+                                Close
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.saveButton}
+                                onClick={saveConfig}
+                            >
+                                Save
+                            </button>
+                        </div>
                     </form>
                 </div>
             )}

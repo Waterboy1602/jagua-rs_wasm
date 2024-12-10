@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 
-import styles from "../style/Result.module.css";
+import styles from "../styles/Result.module.css";
 
 const Result = () => {
     const location = useLocation();
