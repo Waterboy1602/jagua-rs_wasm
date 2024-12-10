@@ -81,11 +81,37 @@ const Input = () => {
         setSelected(newSelected);
     };
 
-    const SvgComponent = ({ shape }: { shape: Shape }) => {
+    const calcScaleShape = (items: Item[]) => {
+        let maxWidth = 0;
+        let maxHeight = 0;
+
+        items.map((item) => {
+            const maxX = Math.max(...item.Shape.Data.map((p) => p[0]));
+            const maxY = Math.max(...item.Shape.Data.map((p) => p[1]));
+            const minX = Math.min(...item.Shape.Data.map((p) => p[0]));
+            const minY = Math.min(...item.Shape.Data.map((p) => p[1]));
+
+            if (maxX - minX > maxWidth) maxWidth = maxX - minX;
+            if (maxY - minY > maxHeight) maxHeight = maxY - minY;
+        });
+
+        return [maxWidth, maxHeight];
+    };
+
+    const SvgComponent = ({
+        shape,
+        svgScale,
+    }: {
+        shape: Shape;
+        svgScale: number[];
+    }) => {
         const maxX = Math.max(...shape.Data.map((p) => p[0]));
         const maxY = Math.max(...shape.Data.map((p) => p[1]));
+        const minX = Math.min(...shape.Data.map((p) => p[0]));
+        const minY = Math.min(...shape.Data.map((p) => p[1]));
         const points = shape.Data.map((p) => `${p[0]},${p[1]}`).join(" ");
 
+        console.log(maxX, maxY, minX, minY);
         return (
             <div className={styles.svgContainer}>
                 <div>
@@ -104,7 +130,11 @@ const Input = () => {
                     </div>
                 </div>
                 <svg
-                    viewBox={`-50 -50 ${maxX + 100} ${maxY + 100}`}
+                    viewBox={`
+                        ${minX - 50} 
+                        ${minY - 50} 
+                        ${svgScale[0] + 75} 
+                        ${svgScale[1] + 75}`}
                     preserveAspectRatio="xMidYMid meet"
                 >
                     <polyline
@@ -120,6 +150,7 @@ const Input = () => {
     };
 
     const renderItems = (items: Item[], selected: boolean[]) => {
+        const svgScale = calcScaleShape(items);
         return items.map((item, index: number) => (
             <div key={`item-${index}`}>
                 <div
@@ -207,7 +238,11 @@ const Input = () => {
                         </div>
                     </div>
 
-                    <SvgComponent key={`svg-${index}`} shape={item.Shape} />
+                    <SvgComponent
+                        key={`svg-${index}`}
+                        shape={item.Shape}
+                        svgScale={svgScale}
+                    />
                 </div>
             </div>
         ));
