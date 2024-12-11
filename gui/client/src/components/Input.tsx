@@ -10,16 +10,7 @@ interface HeaderProps {
     setConfig?: React.Dispatch<React.SetStateAction<Config>>;
 }
 
-const makeConfig = (config: Config): string => {
-    return JSON.stringify(config);
-};
-
-const makeInput = (
-    name: string,
-    items: Item[],
-    selected: boolean[],
-    strip: Strip
-): string => {
+const makeInput = (name: string, items: Item[], selected: boolean[], strip: Strip): string => {
     const jsonObj: { Name?: string; Items?: Item[]; Strip?: Strip } = {
         Name: "",
         Items: [],
@@ -45,27 +36,20 @@ const Input: React.FC<HeaderProps> = ({ config }) => {
     const input = location.state?.input;
 
     const [items, setItems] = useState<Item[]>(input.Items);
-    const [selected, setSelected] = useState<boolean[]>(
-        new Array(input.Items.length).fill(true)
-    );
+    const [selected, setSelected] = useState<boolean[]>(new Array(input.Items.length).fill(true));
     const [stripHeight, setStripHeight] = useState<Strip>(input.Strip);
 
     const handleSubmit = () => {
-        const configJson: string = makeConfig(config);
+        const configJson: string = JSON.stringify(config);
+        const inputJson: string = makeInput(input.Name, items, selected, stripHeight);
 
-        const inputJson: string = makeInput(
-            input.Name,
-            items,
-            selected,
-            stripHeight
-        );
-
+        console.log(configJson);
         console.log(inputJson);
 
         axios
             .post("http://localhost:8000/json", {
                 config: configJson,
-                json_str: inputJson,
+                input: inputJson,
             })
             .then((response) => {
                 console.log(response);
@@ -99,13 +83,7 @@ const Input: React.FC<HeaderProps> = ({ config }) => {
         return [maxWidth, maxHeight];
     };
 
-    const SvgComponent = ({
-        shape,
-        svgScale,
-    }: {
-        shape: Shape;
-        svgScale: number[];
-    }) => {
+    const SvgComponent = ({ shape, svgScale }: { shape: Shape; svgScale: number[] }) => {
         const maxX = Math.max(...shape.Data.map((p) => p[0]));
         const maxY = Math.max(...shape.Data.map((p) => p[1]));
         const minX = Math.min(...shape.Data.map((p) => p[0]));
@@ -120,13 +98,11 @@ const Input: React.FC<HeaderProps> = ({ config }) => {
 
                     <div className={styles.shape}>
                         <ul>
-                            {shape.Data.map(
-                                (point: number[], index: number) => (
-                                    <li key={index}>
-                                        ({point[0]}, {point[1]})
-                                    </li>
-                                )
-                            )}
+                            {shape.Data.map((point: number[], index: number) => (
+                                <li key={index}>
+                                    ({point[0]}, {point[1]})
+                                </li>
+                            ))}
                         </ul>
                     </div>
                 </div>
@@ -157,9 +133,7 @@ const Input: React.FC<HeaderProps> = ({ config }) => {
                 <div
                     className={styles.item}
                     style={{
-                        outline: selected[index]
-                            ? "3px solid black"
-                            : "1px solid black",
+                        outline: selected[index] ? "3px solid black" : "1px solid black",
                     }}
                 >
                     <div
@@ -187,25 +161,7 @@ const Input: React.FC<HeaderProps> = ({ config }) => {
                             value={item.Demand}
                             onChange={(e) => {
                                 const newItems = [...items];
-                                newItems[index].Demand = parseInt(
-                                    e.target.value
-                                );
-                                setItems(newItems);
-                            }}
-                        />
-                    </div>
-
-                    <div className={styles.itemValue}>
-                        <p>Max demand:</p>
-                        <input
-                            className={styles.number}
-                            type="number"
-                            value={item.DemandMax}
-                            onChange={(e) => {
-                                const newItems = [...items];
-                                newItems[index].DemandMax = parseInt(
-                                    e.target.value
-                                );
+                                newItems[index].Demand = parseInt(e.target.value);
                                 setItems(newItems);
                             }}
                         />
@@ -214,36 +170,29 @@ const Input: React.FC<HeaderProps> = ({ config }) => {
                     <div className={styles.itemValue}>
                         <p>Orientations:</p>
                         <div>
-                            {item.AllowedOrientations.map(
-                                (orientation: number, idx: number) => (
-                                    <div
-                                        className={styles.degreeSymbolWrapper}
-                                        key={`orientation-${index}-${idx}`}
-                                    >
-                                        <input
-                                            className={styles.number}
-                                            type="number"
-                                            value={orientation}
-                                            onChange={(e) => {
-                                                const newItems = [...items];
-                                                newItems[
-                                                    index
-                                                ].AllowedOrientations[index] =
-                                                    parseInt(e.target.value);
-                                                setItems(newItems);
-                                            }}
-                                        />
-                                    </div>
-                                )
-                            )}
+                            {item.AllowedOrientations.map((orientation: number, idx: number) => (
+                                <div
+                                    className={styles.degreeSymbolWrapper}
+                                    key={`orientation-${index}-${idx}`}
+                                >
+                                    <input
+                                        className={styles.number}
+                                        type="number"
+                                        value={orientation}
+                                        onChange={(e) => {
+                                            const newItems = [...items];
+                                            newItems[index].AllowedOrientations[index] = parseInt(
+                                                e.target.value
+                                            );
+                                            setItems(newItems);
+                                        }}
+                                    />
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    <SvgComponent
-                        key={`svg-${index}`}
-                        shape={item.Shape}
-                        svgScale={svgScale}
-                    />
+                    <SvgComponent key={`svg-${index}`} shape={item.Shape} svgScale={svgScale} />
                 </div>
             </div>
         ));
@@ -254,11 +203,7 @@ const Input: React.FC<HeaderProps> = ({ config }) => {
             <div className={styles.title}>
                 <h1>{input.Name}.json</h1>
 
-                <button
-                    className={styles.submit}
-                    type="submit"
-                    onClick={handleSubmit}
-                >
+                <button className={styles.submit} type="submit" onClick={handleSubmit}>
                     Calculate
                 </button>
             </div>
@@ -271,9 +216,7 @@ const Input: React.FC<HeaderProps> = ({ config }) => {
                         boxSizing: "border-box",
                     }}
                 >
-                    <div
-                        className={`${styles.checkboxContainer} ${styles.strip}`}
-                    >
+                    <div className={`${styles.checkboxContainer} ${styles.strip}`}>
                         <h3>{input.Strip ? "Strip" : "Bin"}</h3>
                     </div>
                     <hr />

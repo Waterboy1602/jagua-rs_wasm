@@ -32,6 +32,15 @@ img {
     height: 100%;
 }
 
+.settingsIcon {
+    cursor: pointer;
+    color: #333;
+}
+
+.settingsIcon:hover {
+    color: black;
+}
+
 .settingsPanel {
     position: fixed;
     top: 50%;
@@ -65,6 +74,25 @@ img {
     width: 75px;
 }
 
+.degreeSymbolWrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.degreeSymbolWrapper::after {
+    content: "%";
+    position: absolute;
+    right: 85px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none; /* Prevent interaction with the degree symbol */
+    padding-right: 10px;
+}
+
+.degreeSymbolWrapper.float::after {
+    right: 70px;
+}
+
 .settingsPanel button {
     margin: 20px;
     padding: 10px;
@@ -72,16 +100,25 @@ img {
     border-radius: 4px;
     cursor: pointer;
     width: 50%;
+    font-weight: bold;
 }
 
-.settingsPanel .closeButton {
-    background-color: #f44336;
+.cancelButton {
+    background-color: #f0f0f0;
+    color: black;
+}
+
+.cancelButton:hover {
+    background-color: #cccccc;
+}
+
+.saveButton {
+    background-color: #4ba54e;
     color: white;
 }
 
-.settingsPanel .saveButton {
-    background-color: #4caf50;
-    color: white;
+.saveButton:hover {
+    background-color: #307232;
 }
 
 .buttons {

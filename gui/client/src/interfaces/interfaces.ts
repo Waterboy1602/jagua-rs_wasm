@@ -1,14 +1,18 @@
 export interface Config {
-    quadtreeDepth: number;
-    hpgNCells: number;
-    poleCoverageGoal: number;
-    maxPoles: number;
-    nFFPoles: number;
-    nFFPiers: number;
-    polySimplTolerance: number;
-    prngSeed: number;
-    nSamples: number;
-    lsFrac: number;
+    cde_config: {
+        quadtree_depth: number;
+        hpg_n_cells: number;
+        item_surrogate_config: {
+            pole_coverage_goal: number;
+            max_poles: number;
+            n_ff_poles: number;
+            n_ff_piers: number;
+        };
+    };
+    poly_simpl_tolerance: number;
+    prng_seed: number;
+    n_samples: number;
+    ls_frac: number;
 }
 
 export interface Input {
@@ -28,7 +32,6 @@ export interface Shape {
 
 export interface Item {
     Demand: number;
-    DemandMax: number;
     AllowedOrientations: number[];
     Shape: Shape;
 }

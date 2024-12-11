@@ -8,19 +8,25 @@ import Result from "./components/Result.tsx";
 
 import { Config } from "./interfaces/interfaces";
 
+const defaultConfig: Config = {
+    cde_config: {
+        quadtree_depth: 5,
+        hpg_n_cells: 2000,
+        item_surrogate_config: {
+            pole_coverage_goal: 0.9,
+            max_poles: 10,
+            n_ff_poles: 2,
+            n_ff_piers: 0,
+        },
+    },
+    poly_simpl_tolerance: 0.001,
+    prng_seed: 0,
+    n_samples: 5000,
+    ls_frac: 0.02,
+};
+
 function App() {
-    const [config, setConfig] = useState<Config>({
-        quadtreeDepth: 5,
-        hpgNCells: 2000,
-        poleCoverageGoal: 90,
-        maxPoles: 10,
-        nFFPoles: 2,
-        nFFPiers: 0,
-        polySimplTolerance: 0.1,
-        prngSeed: 0,
-        nSamples: 5000,
-        lsFrac: 2,
-    });
+    const [config, setConfig] = useState<Config>(defaultConfig);
 
     return (
         <Router>

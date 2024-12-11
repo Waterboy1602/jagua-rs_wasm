@@ -18,7 +18,7 @@ const Header: React.FC<HeaderProps> = ({ config, setConfig }) => {
         setShowSettings(!showSettings);
     };
 
-    const closeConfig = () => {
+    const cancelConfig = () => {
         setShowSettings(false);
     };
 
@@ -28,20 +28,34 @@ const Header: React.FC<HeaderProps> = ({ config, setConfig }) => {
         if (form) {
             const formData = new FormData(form);
             const newConfig: Config = {
-                quadtreeDepth: Number(formData.get("quadtreeDepth")),
-                hpgNCells: Number(formData.get("hpgNCells")),
-                poleCoverageGoal: Number(formData.get("poleCoverageGoal")),
-                maxPoles: Number(formData.get("maxPoles")),
-                nFFPoles: Number(formData.get("nFFPoles")),
-                nFFPiers: Number(formData.get("nFFPiers")),
-                polySimplTolerance: Number(formData.get("polySimplTolerance")),
-                prngSeed: Number(formData.get("prngSeed")),
-                nSamples: Number(formData.get("nSamples")),
-                lsFrac: Number(formData.get("lsFrac")),
+                cde_config: {
+                    quadtree_depth:
+                        Number(formData.get("quadtreeDepth")) || config.cde_config.quadtree_depth,
+                    hpg_n_cells: Number(formData.get("hpgNCells")) || config.cde_config.hpg_n_cells,
+                    item_surrogate_config: {
+                        pole_coverage_goal:
+                            Number(formData.get("poleCoverageGoal")) / 100 ||
+                            config.cde_config.item_surrogate_config.pole_coverage_goal,
+                        max_poles:
+                            Number(formData.get("maxPoles")) ||
+                            config.cde_config.item_surrogate_config.max_poles,
+                        n_ff_poles:
+                            Number(formData.get("nFFPoles")) ||
+                            config.cde_config.item_surrogate_config.n_ff_poles,
+                        n_ff_piers:
+                            Number(formData.get("nFFPiers")) ||
+                            config.cde_config.item_surrogate_config.n_ff_piers,
+                    },
+                },
+                poly_simpl_tolerance:
+                    Number(formData.get("polySimplTolerance")) / 100 || config.poly_simpl_tolerance,
+                prng_seed: Number(formData.get("prngSeed")) || config.prng_seed,
+                n_samples: Number(formData.get("nSamples")) || config.n_samples,
+                ls_frac: Number(formData.get("lsFrac")) / 100 || config.ls_frac,
             };
             setConfig(newConfig);
         }
-        closeConfig();
+        setShowSettings(false);
     };
 
     return (
@@ -54,7 +68,7 @@ const Header: React.FC<HeaderProps> = ({ config, setConfig }) => {
                 icon={faGear}
                 size="3x"
                 onClick={toggleConfig}
-                style={{ color: "#333", cursor: "pointer" }}
+                className={styles.settingsIcon}
             />
 
             {showSettings && (
@@ -65,7 +79,8 @@ const Header: React.FC<HeaderProps> = ({ config, setConfig }) => {
                         <label>
                             <input
                                 type="number"
-                                defaultValue={config.quadtreeDepth}
+                                name="quadtreeDepth"
+                                defaultValue={config.cde_config.quadtree_depth}
                                 className={styles.input}
                             />
                             Quadtree depth
@@ -74,7 +89,8 @@ const Header: React.FC<HeaderProps> = ({ config, setConfig }) => {
                         <label>
                             <input
                                 type="number"
-                                defaultValue={config.hpgNCells}
+                                name="hpgNCells"
+                                defaultValue={config.cde_config.hpg_n_cells}
                                 className={styles.input}
                             />
                             #Cells of the hazard proximity grid
@@ -82,21 +98,28 @@ const Header: React.FC<HeaderProps> = ({ config, setConfig }) => {
 
                         <h3>Config surrogate item</h3>
                         <label>
-                            <input
-                                type="number"
-                                step="1"
-                                defaultValue={config.poleCoverageGoal}
-                                className={styles.input}
-                                min="0"
-                                max="100"
-                            />
+                            <div className={styles.degreeSymbolWrapper}>
+                                <input
+                                    type="number"
+                                    step="1"
+                                    min="0"
+                                    max="100"
+                                    name="poleCoverageGoal"
+                                    defaultValue={
+                                        config.cde_config.item_surrogate_config.pole_coverage_goal *
+                                        100
+                                    }
+                                    className={styles.input}
+                                />
+                            </div>
                             Pole coverage goal
                         </label>
 
                         <label>
                             <input
                                 type="number"
-                                defaultValue={config.maxPoles}
+                                name="maxPoles"
+                                defaultValue={config.cde_config.item_surrogate_config.max_poles}
                                 className={styles.input}
                             />
                             Max #poles
@@ -105,7 +128,8 @@ const Header: React.FC<HeaderProps> = ({ config, setConfig }) => {
                         <label>
                             <input
                                 type="number"
-                                defaultValue={config.nFFPoles}
+                                name="nFFPoles"
+                                defaultValue={config.cde_config.item_surrogate_config.n_ff_poles}
                                 className={styles.input}
                             />
                             #Poles for fail-fast collision detection
@@ -114,7 +138,8 @@ const Header: React.FC<HeaderProps> = ({ config, setConfig }) => {
                         <label>
                             <input
                                 type="number"
-                                defaultValue={config.nFFPiers}
+                                name="nFFPiers"
+                                defaultValue={config.cde_config.item_surrogate_config.n_ff_piers}
                                 className={styles.input}
                             />
                             #Piers for fail-fast collision detection
@@ -123,21 +148,25 @@ const Header: React.FC<HeaderProps> = ({ config, setConfig }) => {
                         <hr />
 
                         <label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                defaultValue={config.polySimplTolerance}
-                                className={styles.input}
-                                min="0"
-                                max="100"
-                            />
+                            <div className={`${styles.degreeSymbolWrapper} ${styles.float}`}>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    max="100"
+                                    name="polySimplTolerance"
+                                    defaultValue={config.poly_simpl_tolerance * 100}
+                                    className={styles.input}
+                                />
+                            </div>
                             Polygon simplify tolerance
                         </label>
 
                         <label>
                             <input
                                 type="number"
-                                defaultValue={config.prngSeed}
+                                name="prngSeed"
+                                defaultValue={config.prng_seed}
                                 className={styles.input}
                             />
                             PRNG Seed
@@ -146,31 +175,35 @@ const Header: React.FC<HeaderProps> = ({ config, setConfig }) => {
                         <label>
                             <input
                                 type="number"
-                                defaultValue={config.nSamples}
+                                name="nSamples"
+                                defaultValue={config.n_samples}
                                 className={styles.input}
                             />
                             #Samples
                         </label>
 
                         <label>
-                            <input
-                                type="number"
-                                step="1"
-                                defaultValue={config.lsFrac}
-                                className={styles.input}
-                                min="0"
-                                max="100"
-                            />
+                            <div className={styles.degreeSymbolWrapper}>
+                                <input
+                                    type="number"
+                                    step="1"
+                                    min="0"
+                                    max="100"
+                                    name="lsFrac"
+                                    defaultValue={config.ls_frac * 100}
+                                    className={styles.input}
+                                />
+                            </div>
                             Local search fraction
                         </label>
 
                         <div className={styles.buttons}>
                             <button
                                 type="button"
-                                className={styles.closeButton}
-                                onClick={closeConfig}
+                                className={styles.cancelButton}
+                                onClick={cancelConfig}
                             >
-                                Close
+                                Cancel
                             </button>
                             <button
                                 type="button"

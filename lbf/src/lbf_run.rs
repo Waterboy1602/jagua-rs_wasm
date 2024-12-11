@@ -15,8 +15,20 @@ use jagua_rs::io::parser;
 use jagua_rs::io::parser::Parser;
 use jagua_rs::util::polygon_simplification::PolySimplConfig;
 
-pub fn solve_json(input_json: String, path_sol: String) -> Vec<Vec<String>> {
-    let config = LBFConfig::default();
+pub fn solve_json(config_json: String, input_json: String, path_sol: String) -> Vec<Vec<String>> {
+    let config = if config_json.is_empty() {
+        warn!("No config file provided");
+        warn!(
+            "Falling back default config:\n{}",
+            serde_json::to_string(&LBFConfig::default()).unwrap()
+        );
+        LBFConfig::default()
+    } else {
+        serde_json::from_str(&config_json).unwrap_or_else(|err| {
+            error!("Config json could not be parsed: {}", err);
+            panic!();
+        })
+    };
 
     let json_instance: JsonInstance;
     let instance: Instance;

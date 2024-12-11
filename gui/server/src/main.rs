@@ -18,17 +18,19 @@ type SvgFiles = Mutex<Vec<String>>; // Define a type alias for shared state.
 
 #[derive(Deserialize, Serialize)]
 pub struct InputData {
-    pub json_str: String,
+    pub config: String,
+    pub input: String,
 }
 
 #[post("/json", format = "json", data = "<input_data>")]
 async fn json(input_data: Json<InputData>, svg_state: &State<SvgFiles>) -> Result<Json<Vec<Vec<String>>>, String> {
     let json = input_data.into_inner();
-    if json.json_str.is_empty() {
+
+    if json.input.is_empty() {
         return Err("JSON cannot be empty".to_string());
     }
 
-    let mut svg_files = solve_json(json.json_str.clone(), "static/solutions/".to_string());
+    let mut svg_files = solve_json(json.config, json.input.clone(), "static/solutions/".to_string());
     if svg_files.is_empty() {
         return Err("No solution found.".to_string());
     } else {
