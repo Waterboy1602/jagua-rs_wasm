@@ -6,20 +6,13 @@ import { Config } from "../interfaces/interfaces";
 
 import styles from "../styles/Header.module.css";
 
-const Header = () => {
+interface HeaderProps {
+    config: Config;
+    setConfig: React.Dispatch<React.SetStateAction<Config>>;
+}
+
+const Header: React.FC<HeaderProps> = ({ config, setConfig }) => {
     const [showSettings, setShowSettings] = useState(false);
-    const [config, setConfig] = useState<Config>({
-        quadtreeDepth: 5,
-        hpgNCells: 2000,
-        poleCoverageGoal: 90,
-        maxPoles: 10,
-        nFFPoles: 2,
-        nFFPiers: 0,
-        polySimplTolerance: 0.1,
-        prngSeed: 0,
-        nSamples: 5000,
-        lsFrac: 2,
-    });
 
     const toggleConfig = () => {
         setShowSettings(!showSettings);

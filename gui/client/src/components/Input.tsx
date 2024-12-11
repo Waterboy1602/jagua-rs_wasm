@@ -1,9 +1,18 @@
 import { useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Config, Input, Strip, Shape, Item } from "../interfaces/interfaces";
+import { Config, Strip, Shape, Item } from "../interfaces/interfaces";
 
 import styles from "../styles/Input.module.css";
+
+interface HeaderProps {
+    config: Config;
+    setConfig?: React.Dispatch<React.SetStateAction<Config>>;
+}
+
+const makeConfig = (config: Config): string => {
+    return JSON.stringify(config);
+};
 
 const makeInput = (
     name: string,
@@ -30,11 +39,10 @@ const makeInput = (
     return JSON.stringify(jsonObj);
 };
 
-const Input = () => {
+const Input: React.FC<HeaderProps> = ({ config }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const input = location.state?.input;
-    const config = location.state?.config;
 
     const [items, setItems] = useState<Item[]>(input.Items);
     const [selected, setSelected] = useState<boolean[]>(
@@ -43,7 +51,7 @@ const Input = () => {
     const [stripHeight, setStripHeight] = useState<Strip>(input.Strip);
 
     const handleSubmit = () => {
-        const configJson: string = makeConfig(stripHeight);
+        const configJson: string = makeConfig(config);
 
         const inputJson: string = makeInput(
             input.Name,
