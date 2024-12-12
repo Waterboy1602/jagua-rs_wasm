@@ -53,7 +53,7 @@ const Input: React.FC<HeaderProps> = ({ config }) => {
             })
             .then((response) => {
                 console.log(response);
-                navigate("/result", { state: response.data });
+                navigate("/solution", { state: { data: response.data, input } });
             })
             .catch((err) => {
                 console.error(err);

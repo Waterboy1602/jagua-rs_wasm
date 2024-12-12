@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Header from "./components/Header.tsx";
 import Home from "./components/Home.tsx";
 import Input from "./components/Input.tsx";
-import Result from "./components/Result.tsx";
+import Solution from "./components/Solution.tsx";
 
 import { Config } from "./interfaces/interfaces";
 
@@ -35,7 +35,7 @@ function App() {
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/input" element={<Input config={config} />} />
-                    <Route path="/result" element={<Result />} />
+                    <Route path="/solution" element={<Solution />} />
                 </Routes>
             </main>
         </Router>

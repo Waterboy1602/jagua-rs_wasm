@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router-dom";
+import { faGear, faHome, faFilePen } from "@fortawesome/free-solid-svg-icons";
+import { Link, useLocation } from "react-router-dom";
 import { Config } from "../interfaces/interfaces";
 
 import styles from "../styles/Header.module.css";
@@ -13,6 +13,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ config, setConfig }) => {
     const [showSettings, setShowSettings] = useState(false);
+    const location = useLocation();
 
     const toggleConfig = () => {
         setShowSettings(!showSettings);
@@ -60,16 +61,37 @@ const Header: React.FC<HeaderProps> = ({ config, setConfig }) => {
 
     return (
         <header className={styles.header}>
-            <Link to="/" className={styles.logo}>
+            {location.pathname !== "/solution" && (
+                <Link to="/" className={styles.container} style={{ justifyContent: "flex-start" }}>
+                    <FontAwesomeIcon icon={faHome} size="2x" className={styles.icon} />
+                </Link>
+            )}
+
+            {location.pathname === "/solution" && (
+                <Link
+                    to="/input"
+                    state={{ config, input: location.state?.input }}
+                    className={styles.container}
+                    style={{ justifyContent: "flex-start" }}
+                >
+                    <FontAwesomeIcon icon={faFilePen} size="2x" className={styles.icon} />
+                    <h1>Change input</h1>
+                </Link>
+            )}
+
+            <Link to="/" className={styles.container}>
                 <img src="./jaguars_logo.svg" alt="jagua-rs logo" />
                 <h1>jagua-rs</h1>
             </Link>
-            <FontAwesomeIcon
-                icon={faGear}
-                size="3x"
-                onClick={toggleConfig}
-                className={styles.settingsIcon}
-            />
+
+            <div className={`${styles.container}`} style={{ justifyContent: "flex-end" }}>
+                <FontAwesomeIcon
+                    icon={faGear}
+                    size="2x"
+                    onClick={toggleConfig}
+                    className={`${styles.icon} `}
+                />
+            </div>
 
             {showSettings && (
                 <div className={styles.settingsPanel}>
