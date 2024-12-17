@@ -167,7 +167,7 @@ const Header: React.FC<HeaderProps> = ({ config, setConfig }) => {
                             #Piers for fail-fast collision detection
                         </label>
 
-                        <hr />
+                        <hr style={{marginBottom: "10px"}}/>
 
                         <label>
                             <div className={`${styles.degreeSymbolWrapper} ${styles.float}`}>
