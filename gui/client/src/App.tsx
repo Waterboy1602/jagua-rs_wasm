@@ -5,6 +5,7 @@ import Header from "./components/Header.tsx";
 import Home from "./components/Home.tsx";
 import Input from "./components/Input.tsx";
 import Solution from "./components/Solution.tsx";
+import SVGManipulation from "./components/SVGMani.tsx";
 
 import { Config } from "./interfaces/interfaces";
 
@@ -36,6 +37,7 @@ function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/input" element={<Input config={config} />} />
                     <Route path="/solution" element={<Solution />} />
+                    <Route path="/svg" element={<SVGManipulation />} />
                 </Routes>
             </main>
         </Router>

@@ -225,7 +225,7 @@ const Input: React.FC<HeaderProps> = ({ config }) => {
                         <input
                             className={`${styles.number} ${styles.strip}`}
                             type="number"
-                            value={input.Strip.Height}
+                            value={stripHeight.Height}
                             onChange={(e) => {
                                 setStripHeight({
                                     Height: parseInt(e.target.value),
