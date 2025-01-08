@@ -592,7 +592,7 @@ fn dxf_poly_line_to_points(dpl: &LwPolyline) -> Vec<Point> {
     };
 
     (0..n_vertices)
-        .map(|i| Point::from(dpl.vertices[i].x, dpl.vertices[i].y))
+        .map(|i| Point::from((dpl.vertices[i].x as f32, dpl.vertices[i].y as f32)))
         .collect_vec()
 }
 
