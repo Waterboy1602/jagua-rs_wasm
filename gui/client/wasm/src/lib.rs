@@ -50,7 +50,15 @@ pub fn run() {
         } else {
             light_clone2
                 .borrow_mut()
-                .set_attribute("style", "background-color: green;")
+                .set_attribute(
+                    "style",
+                    "background-color: red;
+                    width: 100px;
+                    height: 100px;
+                    backgroundColor: red;
+                    borderRadius: 50%;
+                    margin: 50px auto;",
+                )
                 .unwrap();
         }
     });
