@@ -3,7 +3,7 @@ import * as d3 from "d3"; // Import D3 library
 
 import SVG from "./../assets/1.svg?react";
 
-import styles from "../styles/Solution.module.css";
+import styles from "../styles/SVGMani.module.css";
 
 import init, * as wasm from "../../wasm/pkg/wasm";
 
@@ -13,9 +13,12 @@ const SVGManipulation = () => {
     useEffect(() => {
         // Select the SVG and path elements after the component mounts
         const paths = svgRef!.current!.querySelectorAll("g > path");
+        console.log(paths);
 
-        for (let i = 0; i < paths.length; i++) {
+        for (let i = 1; i < paths.length; i++) {
             const path = d3.select(paths[i]);
+            let initialX = 0;
+            let initialY = 0;
 
             const drag = d3
                 .drag()
@@ -25,14 +28,27 @@ const SVGManipulation = () => {
                 .on("start", function () {
                     // This will be triggered when dragging starts
                     console.log("Drag started");
+                    const transform = path.attr("transform");
+                    if (transform) {
+                        const translate = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+                        if (translate) {
+                            initialX = parseFloat(translate[1]);
+                            initialY = parseFloat(translate[2]);
+                        }
+                    }
                 })
                 .on("drag", function (event) {
                     // During dragging, move the element based on the drag's delta (movement)
-                    path.attr("transform", `translate(${event.x}, ${event.y})`);
+                    const newX = initialX + event.x;
+                    const newY = initialY + event.y;
+                    path.attr("transform", `translate(${newX}, ${newY})`);
+                    console.log("Dragging", event.x, event.y);
                 })
                 .on("end", function () {
                     // This will be triggered when the drag ends
                     console.log("Drag ended");
+                    console.log(path.attr("transform"));
+                    wasm.toggleBox();
                 });
 
             // Apply drag behavior to the path element
@@ -54,22 +70,9 @@ const SVGManipulation = () => {
 
     return (
         <div>
-            <div>
-                <h1>Traffic Light (Rust + WebAssembly + React)</h1>
-                <div
-                    id="traffic-light"
-                    style={{
-                        width: "100px",
-                        height: "100px",
-                        backgroundColor: "green",
-                        borderRadius: "50%",
-                        margin: "50px auto",
-                    }}
-                ></div>
-            </div>
-
             <div className={`${styles.container} ${styles.result}`}>
                 <h1>SVG Manipulation</h1>
+                <div id="testBox" className={`${styles.testBox}`}></div>
 
                 <div className={`${styles.container} ${styles.solution}`}>
                     <SVG width={1000} height={500} ref={svgRef} />

@@ -1,0 +1,28 @@
+.result {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    height: 90vh;
+    top: 0;
+    left: 0;
+}
+
+.solution {
+    height: 70vh;
+    max-width: 80vw;
+}
+
+.solution > img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.testBox {
+    width: 100px;
+    height: 100px;
+    background-color: green;
+    display: block;
+}

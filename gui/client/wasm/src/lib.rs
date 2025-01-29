@@ -72,3 +72,13 @@ pub fn run() {
         .unwrap();
     stop_checker.forget();
 }
+
+#[wasm_bindgen]
+pub fn toggle_box() {
+    let document = window().unwrap().document().unwrap();
+    let testBox = document
+        .get_element_by_id("testBox")
+        .unwrap()
+        .dyn_into::<HtmlElement>()
+        .unwrap();
+}
