@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import * as d3 from "d3"; // Import D3 library
+import * as d3 from "d3";
 
 import SVG from "./../assets/1.svg?react";
 
@@ -10,15 +10,21 @@ import init, * as wasm from "../../wasm/pkg/wasm";
 const SVGManipulation = () => {
     const svgRef = useRef<SVGSVGElement>(null);
 
+    function roundFloat(num: number) {
+        return Number(num.toFixed(3));
+    }
+
+    function translatePoint(x: number, y: number, tx: number, ty: number) {
+        return [roundFloat(x + tx), roundFloat(y + ty)];
+    }
+
     useEffect(() => {
-        // Select the SVG and path elements after the component mounts
         const paths = svgRef!.current!.querySelectorAll("g > path");
-        console.log(paths);
 
         for (let i = 1; i < paths.length; i++) {
             const path = d3.select(paths[i]);
-            let initialX = 0;
-            let initialY = 0;
+            let transX = 0;
+            let transY = 0;
 
             const drag = d3
                 .drag()
@@ -26,57 +32,64 @@ const SVGManipulation = () => {
                     return { x: path.attr("x"), y: path.attr("y") };
                 })
                 .on("start", function () {
-                    // This will be triggered when dragging starts
-                    console.log("Drag started");
-                    const transform = path.attr("transform");
-                    if (transform) {
-                        const translate = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
-                        if (translate) {
-                            initialX = parseFloat(translate[1]);
-                            initialY = parseFloat(translate[2]);
-                        }
-                    }
+                    wasm.toggle_box();
                 })
                 .on("drag", function (event) {
-                    // During dragging, move the element based on the drag's delta (movement)
-                    const newX = initialX + event.x;
-                    const newY = initialY + event.y;
-                    path.attr("transform", `translate(${newX}, ${newY})`);
-                    console.log("Dragging", event.x, event.y);
+                    transX = event.x;
+                    transY = event.y;
+                    path.attr("transform", `translate(${event.x}, ${event.y})`);
                 })
                 .on("end", function () {
-                    // This will be triggered when the drag ends
-                    console.log("Drag ended");
-                    console.log(path.attr("transform"));
-                    wasm.toggleBox();
+                    const commands = path.attr("d").split(/(?=[A-Za-z])/);
+                    let newDAttribute = "";
+
+                    commands.forEach((command) => {
+                        if (command !== "z") {
+                            const type = command[0];
+                            const coords = command.slice(1).trim().split(",").map(Number);
+
+                            const newCoords = [];
+                            for (let i = 0; i < coords.length; i += 2) {
+                                const [x, y] = translatePoint(
+                                    coords[i],
+                                    coords[i + 1],
+                                    transX,
+                                    transY
+                                );
+                                newCoords.push(x, y);
+                            }
+
+                            newDAttribute += `${type}${newCoords.join(",")} `;
+                        } else {
+                            newDAttribute += "z";
+                        }
+                    });
+
+                    path.attr("d", `${newDAttribute.trim()}`);
+                    path.attr("transform", `translate(0,0)`);
+
+                    wasm.toggle_box();
                 });
 
-            // Apply drag behavior to the path element
             path.call(drag);
         }
 
         init()
             .then(() => {
                 console.log("WASM Module Loaded:", Object.keys(wasm));
-
-                if (wasm.run) {
-                    wasm.run(); // Call the exported `run` function
-                } else {
-                    console.error("run() is undefined! Check module exports.");
-                }
             })
             .catch(console.error);
     }, []);
 
     return (
         <div>
-            <div className={`${styles.container} ${styles.result}`}>
+            <div className={`${styles.rust}`}>
                 <h1>SVG Manipulation</h1>
-                <div id="testBox" className={`${styles.testBox}`}></div>
+                <div id="testBox" className={`green`}></div>
+            </div>
 
-                <div className={`${styles.container} ${styles.solution}`}>
-                    <SVG width={1000} height={500} ref={svgRef} />
-                </div>
+            <div className={`${styles.svg}`}>
+                <SVG width="100%" height="100%" ref={svgRef} />
             </div>
         </div>
     );

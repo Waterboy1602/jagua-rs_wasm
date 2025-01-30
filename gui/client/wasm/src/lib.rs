@@ -4,7 +4,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{window, HtmlElement, MouseEvent};
+use web_sys::*;
 
 #[wasm_bindgen]
 pub fn run() {
@@ -75,10 +75,30 @@ pub fn run() {
 
 #[wasm_bindgen]
 pub fn toggle_box() {
-    let document = window().unwrap().document().unwrap();
-    let testBox = document
+    console::log_1(&"toggle_box".into());
+
+    let window = web_sys::window().expect("should have a window in this context");
+    let document = window.document().expect("should have a document on window");
+
+    let test_box_element = document
         .get_element_by_id("testBox")
-        .unwrap()
-        .dyn_into::<HtmlElement>()
-        .unwrap();
+        .expect("should have #testBox element on the page");
+
+    let test_box: HtmlElement = match test_box_element.dyn_into::<HtmlElement>() {
+        Ok(element) => element,
+        Err(_) => {
+            console::error_1(&"Could not cast testBox to HtmlElement".into());
+            return;
+        }
+    };
+
+    let class_name = test_box
+        .get_attribute("class")
+        .unwrap_or_else(|| String::from(""));
+
+    if class_name == "green" {
+        test_box.set_attribute("class", "red").unwrap();
+    } else {
+        test_box.set_attribute("class", "green").unwrap();
+    }
 }
