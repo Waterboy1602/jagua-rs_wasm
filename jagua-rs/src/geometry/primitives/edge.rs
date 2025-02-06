@@ -43,10 +43,10 @@ impl Edge {
 
     pub fn scale(mut self, factor: fsize) -> Self {
         let (dx, dy) = (self.end.0 - self.start.0, self.end.1 - self.start.1);
-        self.start.0 = self.start.0 - (dx * (factor - 1.0) / 2.0);
-        self.start.1 = self.start.1 - (dy * (factor - 1.0) / 2.0);
-        self.end.0 = self.end.0 + (dx * (factor - 1.0) / 2.0);
-        self.end.1 = self.end.1 + (dy * (factor - 1.0) / 2.0);
+        self.start.0 -= dx * (factor - 1.0) / 2.0;
+        self.start.1 -= dy * (factor - 1.0) / 2.0;
+        self.end.0 += dx * (factor - 1.0) / 2.0;
+        self.end.1 += dy * (factor - 1.0) / 2.0;
         self
     }
 
@@ -145,7 +145,7 @@ impl Shape for Edge {
     }
 
     fn diameter(&self) -> fsize {
-        self.start.distance(&self.end)
+        self.start.distance(self.end)
     }
 }
 
@@ -186,11 +186,12 @@ impl CollidesWith<AARectangle> for Edge {
     }
 }
 
+#[inline(always)]
 fn edge_intersection(e1: &Edge, e2: &Edge, calculate_location: bool) -> Intersection {
-    if fsize::max(e1.x_min(), e2.x_min()) > fsize::min(e1.x_max(), e2.x_max()) {
-        return Intersection::No;
-    }
-    if fsize::max(e1.y_min(), e2.y_min()) > fsize::min(e1.y_max(), e2.y_max()) {
+    if fsize::max(e1.x_min(), e2.x_min()) > fsize::min(e1.x_max(), e2.x_max())
+        || fsize::max(e1.y_min(), e2.y_min()) > fsize::min(e1.y_max(), e2.y_max())
+    {
+        //bounding boxes do not overlap
         return Intersection::No;
     }
 
@@ -202,48 +203,26 @@ fn edge_intersection(e1: &Edge, e2: &Edge, calculate_location: bool) -> Intersec
 
     let t_nom = (x2 - x4) * (y4 - y3) - (y2 - y4) * (x4 - x3);
     let t_denom = (x2 - x1) * (y4 - y3) - (y2 - y1) * (x4 - x3);
-
-    let t_nom = t_nom;
-    let t_denom = t_denom;
-
-    if t_denom == 0.0 {
-        //parallel edges
-        return Intersection::No;
-    } else if t_denom > 0.0 {
-        if t_nom < 0.0 || t_nom > t_denom {
-            return Intersection::No;
-        }
-    } else {
-        if t_nom > 0.0 || t_nom < t_denom {
-            return Intersection::No;
-        }
-    }
-
     let u_nom = (x2 - x4) * (y2 - y1) - (y2 - y4) * (x2 - x1);
     let u_denom = (x2 - x1) * (y4 - y3) - (y2 - y1) * (x4 - x3);
 
-    let u_nom = u_nom;
-    let u_denom = u_denom;
-
-    if u_denom == 0.0 {
+    if t_denom == 0.0 || u_denom == 0.0 {
         //parallel edges
-        return Intersection::No;
-    } else if u_denom > 0.0 {
-        if u_nom < 0.0 || u_nom > u_denom {
-            return Intersection::No;
-        }
+        Intersection::No
     } else {
-        if u_nom > 0.0 || u_nom < u_denom {
-            return Intersection::No;
+        let t = t_nom / t_denom;
+        let u = u_nom / u_denom;
+        if (0.0..=1.0).contains(&t) && (0.0..=1.0).contains(&u) {
+            if calculate_location {
+                let x = x2 + t * (x1 - x2);
+                let y = y2 + t * (y1 - y2);
+                Intersection::Yes(Some(Point(x, y)))
+            } else {
+                Intersection::Yes(None)
+            }
+        } else {
+            Intersection::No
         }
-    }
-
-    match calculate_location {
-        true => {
-            let t: fsize = (t_nom / t_denom).into();
-            Intersection::Yes(Some(Point(x2 + t * (x1 - x2), y2 + t * (y1 - y2))))
-        }
-        false => Intersection::Yes(None),
     }
 }
 

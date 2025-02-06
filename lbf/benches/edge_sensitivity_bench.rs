@@ -93,7 +93,7 @@ fn edge_sensitivity_bench(config: LBFConfig, mut g: BenchmarkGroup<WallTime>) {
 
         let layout = problem.get_layout(LayoutIndex::Real(0));
         /*let samples = {
-            let sampler = UniformAARectSampler::new(layout.bin().bbox(), instance.item(0));
+            let sampler = UniformAARectSampler::new(layout.bin.bbox(), instance.item(0));
             (0..N_SAMPLES).map(
                 |_| sampler.sample(&mut rng).compose()
             ).collect_vec()
@@ -127,7 +127,7 @@ fn edge_sensitivity_bench(config: LBFConfig, mut g: BenchmarkGroup<WallTime>) {
                             true => true,
                             false => {
                                 buffer_shape.transform_from(&item.shape, transf);
-                                layout.cde().shape_collides(&buffer_shape, &[])
+                                layout.cde().poly_collides(&buffer_shape, &[])
                             }
                         };
                         match collides {
@@ -156,10 +156,10 @@ fn modify_instance(instance: &Instance, multiplier: usize, config: LBFConfig) ->
             let modified_item = Item::new(
                 item.id,
                 modified_shape,
-                item.value,
                 item.allowed_rotation.clone(),
-                item.pretransform.clone(),
                 item.base_quality,
+                item.value,
+                item.pretransform.clone(),
                 config.cde_config.item_surrogate_config,
             );
             (modified_item, *qty)

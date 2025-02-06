@@ -1,4 +1,4 @@
-# Jagua-rs [![Rust CI](https://github.com/JeroenGar/jagua-rs/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/JeroenGar/jagua-rs/actions/workflows/rust.yml)[![Docs](https://github.com/JeroenGar/jagua-rs/actions/workflows/doc.yml/badge.svg)](https://jeroengar.github.io/jagua-rs-docs/jagua_rs/)
+# jagua-rs [![Rust CI](https://github.com/JeroenGar/jagua-rs/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/JeroenGar/jagua-rs/actions/workflows/rust.yml)[![Docs](https://github.com/JeroenGar/jagua-rs/actions/workflows/doc.yml/badge.svg)](https://jeroengar.github.io/jagua-rs-docs/jagua_rs/)
 
 ### A fast and fearless collision detection engine for 2D irregular cutting and packing problems.
 
@@ -17,7 +17,7 @@ These problems contain two distinct challenges:
 Previously, those tackling these problems have had to address both challenges simultaneously.
 This is particulary demanding given that it requires two distinct sets of expertise and lots of research & development effort.
 
-**This project aims to decouple the two challenges by providing a Collision Detection Engine (CDE) that can efficiently handle the geometric
+**This project aims to decouple the two challenges by providing a Collision Detection Engine (CDE) that can efficiently handle the
 geometric aspects of 2D irregular C&P problems.**
 The CDE's main responsibility is determining if an item can be placed at a certain location without causing any *collisions*, which would render a solution infeasible.
 The CDE embedded in `jagua-rs` is powerful enough to resolve millions of these collision queries every second.

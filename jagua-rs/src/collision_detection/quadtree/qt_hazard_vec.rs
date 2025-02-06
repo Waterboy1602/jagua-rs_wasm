@@ -27,7 +27,7 @@ impl QTHazardVec {
             self.hazards
                 .iter()
                 .filter(|other| other.entity == haz.entity
-                    && matches!(haz.entity, HazardEntity::PlacedItem(_)))
+                    && matches!(haz.entity, HazardEntity::PlacedItem { .. }))
                 .count()
                 == 0,
             "More than one hazard from same item entity in the vector! (This should never happen!)"
@@ -43,30 +43,30 @@ impl QTHazardVec {
         }
     }
 
-    pub fn remove(&mut self, haz_entity: &HazardEntity) -> Option<QTHazard> {
+    pub fn remove(&mut self, haz_entity: HazardEntity) -> Option<QTHazard> {
         debug_assert!(
             self.hazards
                 .iter()
-                .filter(|ch| &ch.entity == haz_entity
-                    && matches!(ch.entity, HazardEntity::PlacedItem(_)))
+                .filter(|ch| ch.entity == haz_entity
+                    && matches!(ch.entity, HazardEntity::PlacedItem { .. }))
                 .count()
                 <= 1,
             "More than one hazard from same item entity in the vector! (This should never happen!)"
         );
-        let pos = self.hazards.iter().position(|ch| &ch.entity == haz_entity);
-        let removed_hazard = match pos {
+        let pos = self.hazards.iter().position(|ch| ch.entity == haz_entity);
+        match pos {
             Some(pos) => {
                 let haz = self.hazards.remove(pos);
                 self.n_active -= haz.active as usize;
                 Some(haz)
             }
             None => None,
-        };
-        removed_hazard
+        }
     }
 
     #[inline(always)]
     /// Returns the strongest hazard (if any), meaning the first active hazard with the highest [QTHazPresence] (`Entire` > `Partial` > `None`)
+    /// Ignores any hazard present in `irrelevant_hazards`.
     pub fn strongest(&self, irrelevant_hazards: &[HazardEntity]) -> Option<&QTHazard> {
         debug_assert!(
             self.hazards.iter().filter(|hz| hz.active).count() == self.n_active,
@@ -90,15 +90,15 @@ impl QTHazardVec {
         }
     }
 
-    pub fn get(&self, entity: &HazardEntity) -> Option<&QTHazard> {
+    pub fn get(&self, entity: HazardEntity) -> Option<&QTHazard> {
         self.hazards
             .iter()
             .filter(|hz| hz.active)
-            .find(|hz| &hz.entity == entity)
+            .find(|hz| hz.entity == entity)
     }
 
-    pub fn activate_hazard(&mut self, entity: &HazardEntity) -> bool {
-        match self.hazards.iter_mut().position(|hz| &hz.entity == entity) {
+    pub fn activate_hazard(&mut self, entity: HazardEntity) -> bool {
+        match self.hazards.iter_mut().position(|hz| hz.entity == entity) {
             Some(index) => {
                 let mut hazard = self.hazards.remove(index);
                 debug_assert!(!hazard.active);
@@ -110,8 +110,8 @@ impl QTHazardVec {
         }
     }
 
-    pub fn deactivate_hazard(&mut self, entity: &HazardEntity) -> bool {
-        match self.hazards.iter_mut().position(|hz| &hz.entity == entity) {
+    pub fn deactivate_hazard(&mut self, entity: HazardEntity) -> bool {
+        match self.hazards.iter_mut().position(|hz| hz.entity == entity) {
             Some(index) => {
                 let mut hazard = self.hazards.remove(index);
                 debug_assert!(hazard.active);
@@ -149,11 +149,12 @@ impl QTHazardVec {
 
 fn order_by_descending_strength(qth1: &QTHazard, qth2: &QTHazard) -> Ordering {
     //sort in descending order of active (true > false) then by presence (Entire > Partial > None)
-    match qth1.active.cmp(&qth2.active).reverse() {
-        Ordering::Equal => {
-            let (p1, p2): (u8, u8) = ((&qth1.presence).into(), (&qth2.presence).into());
-            p1.cmp(&p2).reverse()
-        }
-        other => other,
-    }
+    qth1.active
+        .cmp(&qth2.active)
+        .then({
+            let pres1: u8 = (&qth1.presence).into();
+            let pres2: u8 = (&qth2.presence).into();
+            pres1.cmp(&pres2)
+        })
+        .reverse()
 }

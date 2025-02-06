@@ -19,6 +19,7 @@ use crate::util::assertions;
 /// The grid is a part of the CDE and is thus automatically updated when hazards are registered or deregistered.
 #[derive(Debug, Clone)]
 pub struct HazardProximityGrid {
+    pub bbox: AARectangle,
     pub grid: Grid<HPGCell>,
     pub cell_radius: fsize,
     uncommitted_deregisters: Vec<HazardEntity>,
@@ -33,9 +34,9 @@ impl HazardProximityGrid {
             let uni_hazards = static_hazards
                 .iter()
                 .filter(|h| h.entity.is_universal())
-                .map(|h| h.clone())
+                .cloned()
                 .collect_vec();
-            grid_generator::generate(bbox, &uni_hazards, n_cells)
+            grid_generator::generate(bbox.clone(), &uni_hazards, n_cells)
         };
         let cell_radius = cells[0].diameter() / 2.0;
 
@@ -52,6 +53,7 @@ impl HazardProximityGrid {
         };
 
         HazardProximityGrid {
+            bbox,
             grid,
             uncommitted_deregisters: vec![],
             cell_radius,
@@ -81,8 +83,6 @@ impl HazardProximityGrid {
 
             b_fill = b_fill.reset(&self.grid, &seed_box);
 
-            let mut n_cells_visited = 0;
-
             //As long as the boundary fill keeps finding new cells, keep updating the grid
             while let Some(next_cell) = b_fill.pop() {
                 let cell = self.grid.cells[next_cell].as_mut();
@@ -97,14 +97,11 @@ impl HazardProximityGrid {
                         HPGCellUpdate::NeighborsNotAffected => GeoPosition::Exterior,
                     };
                     b_fill.report_position(next_cell, position_in_bf, &self.grid);
-                    n_cells_visited += 1;
                 } else {
                     //cell does not exist, mark as exterior
                     b_fill.report_position(next_cell, GeoPosition::Exterior, &self.grid);
                 }
             }
-            debug_assert!(n_cells_visited > 0);
-            debug_assert!(b_fill.seeded);
         }
         debug_assert!(assertions::hpg_update_no_affected_cells_remain(
             to_register,
@@ -114,7 +111,7 @@ impl HazardProximityGrid {
 
     pub fn deregister_hazard<'a, I>(
         &mut self,
-        to_deregister: &HazardEntity,
+        to_deregister: HazardEntity,
         remaining: I,
         process_now: bool,
     ) where
@@ -125,7 +122,7 @@ impl HazardProximityGrid {
                 cell.deregister_hazards(iter::once(to_deregister), remaining.clone());
             }
         } else {
-            self.uncommitted_deregisters.push(to_deregister.clone());
+            self.uncommitted_deregisters.push(to_deregister);
         }
     }
 
@@ -135,7 +132,7 @@ impl HazardProximityGrid {
     {
         if self.is_dirty() {
             //deregister all pending hazards at once
-            let to_deregister = self.uncommitted_deregisters.iter();
+            let to_deregister = self.uncommitted_deregisters.iter().cloned();
             for cell in self.grid.cells.iter_mut().flatten() {
                 cell.deregister_hazards(to_deregister.clone(), remaining.clone());
             }

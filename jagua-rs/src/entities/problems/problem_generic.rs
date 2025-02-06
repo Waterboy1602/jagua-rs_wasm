@@ -2,7 +2,7 @@ use std::borrow::Borrow;
 
 use crate::entities::instances::instance_generic::InstanceGeneric;
 use crate::entities::layout::Layout;
-use crate::entities::placed_item::PlacedItemUID;
+use crate::entities::placed_item::PItemKey;
 use crate::entities::placing_option::PlacingOption;
 use crate::entities::problems::problem_generic::private::ProblemGenericPrivate;
 use crate::entities::solution::Solution;
@@ -12,19 +12,20 @@ use crate::fsize;
 pub trait ProblemGeneric: ProblemGenericPrivate {
     /// Places an item into the problem instance according to the given `PlacingOption`.
     /// Returns the index of the layout where the item was placed.
-    fn place_item(&mut self, p_opt: &PlacingOption) -> LayoutIndex;
+    fn place_item(&mut self, p_opt: PlacingOption) -> (LayoutIndex, PItemKey);
 
-    /// Removes an item with a specific `PlacedItemUID` from a specific `Layout`
+    /// Removes a placed item (with its unique key) from a specific `Layout`.
+    /// Returns a `PlacingOption` that can be used to place the item back in the same configuration.
     /// For more information about `commit_instantly`, see [`crate::collision_detection::cd_engine::CDEngine::deregister_hazard`].
     fn remove_item(
         &mut self,
         layout_index: LayoutIndex,
-        pi_uid: &PlacedItemUID,
+        pik: PItemKey,
         commit_instantly: bool,
-    );
+    ) -> PlacingOption;
 
     /// Saves the current state of the problem as a `Solution`.
-    fn create_solution(&mut self, old_solution: &Option<Solution>) -> Solution;
+    fn create_solution(&mut self, old_solution: Option<&Solution>) -> Solution;
 
     /// Restores the state of the problem to a previous `Solution`.
     fn restore_to_solution(&mut self, solution: &Solution);
@@ -52,7 +53,7 @@ pub trait ProblemGeneric: ProblemGenericPrivate {
     fn usage(&mut self) -> fsize {
         let (total_bin_area, total_used_area) =
             self.layouts_mut().iter_mut().fold((0.0, 0.0), |acc, l| {
-                let bin_area = l.bin().area;
+                let bin_area = l.bin.area;
                 let used_area = bin_area * l.usage();
                 (acc.0 + bin_area, acc.1 + used_area)
             });
@@ -60,14 +61,12 @@ pub trait ProblemGeneric: ProblemGenericPrivate {
     }
 
     fn used_bin_cost(&self) -> u64 {
-        self.layouts().iter().map(|l| l.bin().value).sum()
+        self.layouts().iter().map(|l| l.bin.value).sum()
     }
 
     /// Returns the `LayoutIndex` of all layouts.
     fn layout_indices(&self) -> impl Iterator<Item = LayoutIndex> {
-        (0..self.layouts().len())
-            .into_iter()
-            .map(|i| LayoutIndex::Real(i))
+        (0..self.layouts().len()).map(LayoutIndex::Real)
     }
 
     /// Returns the `LayoutIndex` of all template layouts that have remaining stock.
@@ -75,7 +74,7 @@ pub trait ProblemGeneric: ProblemGenericPrivate {
         self.template_layouts()
             .iter()
             .enumerate()
-            .filter_map(|(i, l)| match self.bin_qtys()[l.bin().id] {
+            .filter_map(|(i, l)| match self.bin_qtys()[l.bin.id] {
                 0 => None,
                 _ => Some(LayoutIndex::Template(i)),
             })

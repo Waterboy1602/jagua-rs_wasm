@@ -39,7 +39,7 @@ impl Circle {
         let mut bounding_circle = circles.next().expect("no circles provided").clone();
 
         for circle in circles {
-            let distance_between_centers = bounding_circle.center.distance(&circle.center);
+            let distance_between_centers = bounding_circle.center.distance(circle.center);
             if bounding_circle.radius < distance_between_centers + circle.radius {
                 // circle not contained in bounding circle, expand
                 let diameter = Edge::new(bounding_circle.center, circle.center)
@@ -99,6 +99,7 @@ impl CollidesWith<AARectangle> for Circle {
 
         let Point(c_x, c_y) = self.center;
 
+        //x and y coordinates inside the rectangle, closest to the circle center
         let nearest_x = fsize::max(rect.x_min, fsize::min(c_x, rect.x_max));
         let nearest_y = fsize::max(rect.y_min, fsize::min(c_y, rect.y_max));
 
@@ -108,7 +109,7 @@ impl CollidesWith<AARectangle> for Circle {
 
 impl CollidesWith<Point> for Circle {
     fn collides_with(&self, point: &Point) -> bool {
-        point.sq_distance(&self.center) <= self.radius.powi(2)
+        point.sq_distance(self.center) <= self.radius.powi(2)
     }
 }
 
@@ -121,12 +122,12 @@ impl DistanceFrom<Point> for Circle {
         let Point(x, y) = point;
         let Point(cx, cy) = self.center;
         let sq_d = (x - cx).powi(2) + (y - cy).powi(2);
-        return if sq_d < self.radius.powi(2) {
+        if sq_d < self.radius.powi(2) {
             0.0 //point is inside circle
         } else {
             //point is outside circle
             fsize::sqrt(sq_d) - self.radius
-        };
+        }
     }
 
     fn distance_from_border(&self, point: &Point) -> (GeoPosition, fsize) {
@@ -145,9 +146,66 @@ impl DistanceFrom<Point> for Circle {
     }
 }
 
+impl DistanceFrom<Circle> for Circle {
+    fn sq_distance(&self, other: &Circle) -> fsize {
+        self.distance(other).powi(2)
+    }
+
+    fn distance(&self, other: &Circle) -> fsize {
+        match self.distance_from_border(other) {
+            (GeoPosition::Interior, _) => 0.0,
+            (GeoPosition::Exterior, d) => d,
+        }
+    }
+
+    fn distance_from_border(&self, other: &Circle) -> (GeoPosition, fsize) {
+        let sq_center_dist = self.center.sq_distance(other.center);
+        let sq_radii_sum = (self.radius + other.radius).powi(2);
+        if sq_center_dist < sq_radii_sum {
+            let dist = sq_radii_sum.sqrt() - sq_center_dist.sqrt();
+            (GeoPosition::Interior, dist)
+        } else {
+            let dist = sq_center_dist.sqrt() - sq_radii_sum.sqrt();
+            (GeoPosition::Exterior, dist)
+        }
+    }
+
+    fn sq_distance_from_border(&self, other: &Circle) -> (GeoPosition, fsize) {
+        let (pos, distance) = self.distance_from_border(other);
+        (pos, distance.powi(2))
+    }
+}
+
+impl DistanceFrom<Edge> for Circle {
+    fn sq_distance(&self, e: &Edge) -> fsize {
+        self.distance(e).powi(2)
+    }
+
+    fn distance(&self, e: &Edge) -> fsize {
+        match self.distance_from_border(e) {
+            (GeoPosition::Interior, _) => 0.0,
+            (GeoPosition::Exterior, d) => d,
+        }
+    }
+
+    fn distance_from_border(&self, e: &Edge) -> (GeoPosition, fsize) {
+        let distance_to_center = e.distance(&self.center);
+        if distance_to_center < self.radius {
+            (GeoPosition::Interior, self.radius - distance_to_center)
+        } else {
+            (GeoPosition::Exterior, distance_to_center - self.radius)
+        }
+    }
+
+    fn sq_distance_from_border(&self, e: &Edge) -> (GeoPosition, fsize) {
+        let (pos, distance) = self.distance_from_border(e);
+        (pos, distance.powi(2))
+    }
+}
+
 impl Shape for Circle {
     fn centroid(&self) -> Point {
-        self.center.clone()
+        self.center
     }
 
     fn area(&self) -> fsize {
