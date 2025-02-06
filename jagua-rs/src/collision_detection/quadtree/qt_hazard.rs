@@ -12,7 +12,7 @@ use crate::geometry::primitives::aa_rectangle::AARectangle;
 use crate::geometry::primitives::simple_polygon::SimplePolygon;
 use crate::util::assertions;
 
-/// Represents the manifestation of a [Hazard] in a [QTNode]
+/// Represents the manifestation of a [Hazard] in a [QTNode](crate::collision_detection::quadtree::qt_node::QTNode)
 #[derive(Clone, Debug)]
 pub struct QTHazard {
     pub entity: HazardEntity,
@@ -20,7 +20,7 @@ pub struct QTHazard {
     pub active: bool,
 }
 
-/// How a [Hazard] is present in a [QTNode]
+/// How a [Hazard] is present in a [QTNode](crate::collision_detection::quadtree::qt_node::QTNode)
 #[derive(Clone, Debug)]
 pub enum QTHazPresence {
     /// The hazard is entirely absent from the node
@@ -68,11 +68,11 @@ impl QTHazard {
                 if let Some(quad_index) = enclosed_haz_quad_index {
                     //If the hazard is entirely enclosed within a quadrant,
                     //it is entirely present in that quadrant and not present in the others
-                    for i in 0..4 {
+                    for (i, q_presence) in q_presences.iter_mut().enumerate() {
                         if i == quad_index {
-                            q_presences[i] = Some(self.presence.clone());
+                            *q_presence = Some(self.presence.clone());
                         } else {
-                            q_presences[i] = Some(QTHazPresence::None);
+                            *q_presence = Some(QTHazPresence::None);
                         }
                     }
                 } else {
@@ -136,7 +136,7 @@ impl QTHazard {
 
                 //convert to QTHazards
                 q_presences.map(|hp| match hp {
-                    Some(hp) => Self::new(self.entity.clone(), hp, self.active),
+                    Some(hp) => Self::new(self.entity, hp, self.active),
                     None => unreachable!("all quadrants should have a determined presence"),
                 })
             }
@@ -192,7 +192,7 @@ where
 {
     fn from(hazard: T) -> Self {
         Self {
-            entity: hazard.borrow().entity.clone(),
+            entity: hazard.borrow().entity,
             presence: QTHazPresence::Partial(hazard.borrow().into()),
             active: true,
         }

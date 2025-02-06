@@ -16,7 +16,7 @@ pub fn generate_irrelevant_hazards<'a>(
 ) -> Vec<HazardEntity> {
     hazards
         .filter_map(|h| match filter.is_irrelevant(&h.entity) {
-            true => Some(h.entity.clone()),
+            true => Some(h.entity),
             false => None,
         })
         .collect_vec()
@@ -41,7 +41,7 @@ pub struct CombinedHazardFilter<'a> {
 impl HazardFilter for BinHazardFilter {
     fn is_irrelevant(&self, entity: &HazardEntity) -> bool {
         match entity {
-            HazardEntity::PlacedItem(_) => false,
+            HazardEntity::PlacedItem { .. } => false,
             HazardEntity::BinExterior => true,
             HazardEntity::BinHole { .. } => true,
             HazardEntity::InferiorQualityZone { .. } => true,
