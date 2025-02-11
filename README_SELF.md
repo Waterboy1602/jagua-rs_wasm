@@ -10,6 +10,11 @@ Verschil tussen (Lightweight) LwPolyline en Polyline:
 For most 2D drafting tasks, LWPolylines are the preferred choice due to their efficiency and performance advantages. However, for 3D modeling and complex 2D shapes, Polylines may be more suitable.
 ```
 
+### JAGUA_RS
+
+`cd lbf`
+`cargo run --release -- -i ../assets/swim.json -c ../assets/config_lbf.json -s ../solutions`
+
 ### WASM-PACK
 
 Install: `cargo install wasm-pack`  
