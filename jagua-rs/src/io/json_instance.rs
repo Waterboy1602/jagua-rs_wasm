@@ -30,7 +30,7 @@ pub struct JsonBin {
     /// Number of this bin available, if not present, it is assumed to be unlimited
     pub stock: Option<u64>,
     /// Polygon shape of the bin
-    pub shape: Option<JsonShape>,
+    pub shape: JsonShape,
     /// A list of zones with different quality levels
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub zones: Vec<JsonQualityZone>,
@@ -49,13 +49,11 @@ pub struct JsonStrip {
 pub struct JsonItem {
     /// Number of times this item should be produced
     pub demand: u64,
-    /// Dxf file path to the item
-    pub dxf: Option<String>,
     /// List of allowed orientations angles (in degrees). If none any orientation is allowed
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allowed_orientations: Option<Vec<fsize>>,
     /// Polygon shape of the item
-    pub shape: Option<JsonShape>,
+    pub shape: JsonShape,
     /// The value of the item (for knapsack problems)
     pub value: Option<u64>,
     /// The quality required for the entire item, if not defined maximum quality is required

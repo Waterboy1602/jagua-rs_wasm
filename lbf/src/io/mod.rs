@@ -6,8 +6,6 @@ use std::path::Path;
 use log::{info, log, Level, LevelFilter};
 use svg::Document;
 
-use jagua_rs::io::dxf_parse::parse_dxf;
-use jagua_rs::io::dxf_parse::DxfInstance;
 use jagua_rs::io::json_instance::JsonInstance;
 
 use crate::io::json_output::JsonOutput;
@@ -37,19 +35,6 @@ pub fn read_json_instance(path: Option<&Path>, json_str: Option<&String>) -> Jso
     } else {
         panic!("No instance file or json string provided")
     }
-}
-
-// ! Wordt niet meer gebruikt
-pub fn read_dxf_instance(path: &Path) -> DxfInstance {
-    let file = File::open(path)
-        .unwrap_or_else(|err| panic!("could not open json file: {}, {}", path.display(), err));
-    let reader = BufReader::new(file);
-
-    let json_with_dxf_instance: JsonInstance = serde_json::from_reader(reader)
-        .unwrap_or_else(|err| panic!("could not parse json file: {}, {}", path.display(), err));
-
-    let dxf_instance = parse_dxf(&json_with_dxf_instance);
-    dxf_instance
 }
 
 pub fn write_json_output(json_output: &JsonOutput, path: &Path) {

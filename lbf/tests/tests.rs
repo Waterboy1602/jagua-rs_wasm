@@ -33,7 +33,7 @@ mod tests {
         // parse the instance
         let mut config = LBFConfig::default();
         config.n_samples = 100;
-        let json_instance = io::read_json_instance(&instance);
+        let json_instance = io::read_json_instance(Some(instance), None);
         let poly_simpl_config = match config.poly_simpl_tolerance {
             Some(tolerance) => PolySimplConfig::Enabled { tolerance },
             None => PolySimplConfig::Disabled,

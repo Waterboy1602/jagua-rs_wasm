@@ -39,7 +39,9 @@ pub fn solve_json(config_json: String, input_json: String, path_sol: String) -> 
         None => PolySimplConfig::Disabled,
     };
 
-    let parser = Parser::new(poly_simpl_config, config.cde_config, true, PathBuf::new());
+    // let parser = Parser::new(poly_simpl_config, config.cde_config, true, PathBuf::new());
+    let parser = Parser::new(poly_simpl_config, config.cde_config, true);
+
     instance = parser.parse(&json_instance);
 
     let rng = match config.prng_seed {

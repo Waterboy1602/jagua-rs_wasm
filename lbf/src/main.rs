@@ -4,7 +4,6 @@ use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
 use clap::Parser as ClapParser;
-use jagua_rs::io::dxf_parse::DxfInstance;
 use jagua_rs::io::json_instance::JsonInstance;
 use log::{error, warn};
 use mimalloc::MiMalloc;
@@ -75,7 +74,8 @@ fn main() {
             .expect("Could not get parent directory")
             .to_path_buf();
 
-        let parser = Parser::new(poly_simpl_config, config.cde_config, true, parent_dir);
+        // let parser = Parser::new(poly_simpl_config, config.cde_config, true, parent_dir);
+        let parser = Parser::new(poly_simpl_config, config.cde_config, true);
         instance = parser.parse(&json_with_dxf_instance);
 
         json_instance = json_with_dxf_instance.clone();
@@ -90,7 +90,8 @@ fn main() {
             None => PolySimplConfig::Disabled,
         };
 
-        let parser = Parser::new(poly_simpl_config, config.cde_config, true, PathBuf::new());
+        // let parser = Parser::new(poly_simpl_config, config.cde_config, true, PathBuf::new());
+        let parser = Parser::new(poly_simpl_config, config.cde_config, true);
         instance = parser.parse(&json_instance);
     } else {
         error!(

@@ -1,4 +1,3 @@
-use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -23,7 +22,6 @@ use crate::geometry::primitives::aa_rectangle::AARectangle;
 use crate::geometry::primitives::point::Point;
 use crate::geometry::primitives::simple_polygon::SimplePolygon;
 use crate::geometry::transformation::Transformation;
-use crate::io::dxf_instance::DxfInstance;
 use crate::io::json_instance::{JsonBin, JsonInstance, JsonItem, JsonShape, JsonSimplePoly};
 use crate::io::json_solution::{
     JsonContainer, JsonLayout, JsonLayoutStats, JsonPlacedItem, JsonSolution, JsonTransformation,
@@ -42,7 +40,6 @@ pub struct Parser {
     poly_simpl_config: PolySimplConfig,
     cde_config: CDEConfig,
     center_polygons: bool,
-    path_assets_folder: PathBuf,
 }
 
 impl Parser {
@@ -50,13 +47,11 @@ impl Parser {
         poly_simpl_config: PolySimplConfig,
         cde_config: CDEConfig,
         center_polygons: bool,
-        path_assets_folder: PathBuf,
     ) -> Parser {
         Parser {
             poly_simpl_config,
             cde_config,
             center_polygons,
-            path_assets_folder,
         }
     }
 
@@ -66,9 +61,7 @@ impl Parser {
             .items
             .par_iter()
             .enumerate()
-            .map(|(item_id, json_item)| {
-                self.parse_item(json_item, item_id, &self.path_assets_folder)
-            })
+            .map(|(item_id, json_item)| self.parse_item(json_item, item_id))
             .collect();
 
         let instance: Instance = match (json_instance.bins.as_ref(), json_instance.strip.as_ref()) {
@@ -144,7 +137,6 @@ impl Parser {
         };
 
         let item_value = json_item.value.unwrap_or(0);
-
         let base_quality = json_item.base_quality;
 
         let allowed_orientations = match json_item.allowed_orientations.as_ref() {
@@ -193,22 +185,20 @@ impl Parser {
             JsonShape::MultiPolygon(_) => {
                 unimplemented!("No support for multipolygon shapes yet")
             }
-            None => panic!("No shape specified for bin"),
         };
 
         let bin_holes = match &json_bin.shape {
-            Some(JsonShape::SimplePolygon(_)) | Some(JsonShape::Rectangle { .. }) => vec![],
-            Some(JsonShape::Polygon(jp)) => jp
+            JsonShape::SimplePolygon(_) | JsonShape::Rectangle { .. } => vec![],
+            JsonShape::Polygon(jp) => jp
                 .inner
                 .iter()
                 .map(|jsp| {
                     convert_json_simple_poly(jsp, self.poly_simpl_config, PolySimplMode::Inflate)
                 })
                 .collect_vec(),
-            Some(JsonShape::MultiPolygon(_)) => {
+            JsonShape::MultiPolygon(_) => {
                 unimplemented!("No support for multipolygon shapes yet")
             }
-            None => panic!("No shape specified for bin"),
         };
 
         let material_value =
@@ -268,57 +258,6 @@ impl Parser {
 
         (bin, stock)
     }
-
-    // pub fn parse_dxf(&self, dxf_instance: &DxfInstance) -> Instance {
-    //     let items = dxf_instance
-    //         .items
-    //         .par_iter()
-    //         .enumerate()
-    //         .map(|(item_id, dxf_item)| self.parse_item(dxf_item, item_id))
-    //         .collect();
-
-    //     let instance: Instance = match (dxf_instance.bins.as_ref(), dxf_instance.strip.as_ref()) {
-    //         (Some(dxf_bins), None) => {
-    //             let bins: Vec<(Bin, usize)> = dxf_bins
-    //                 .par_iter()
-    //                 .enumerate()
-    //                 .map(|(bin_id, dxf_bin)| self.parse_bin(dxf_bin, bin_id))
-    //                 .collect();
-    //             BPInstance::new(items, bins).into()
-    //         }
-    //         (None, Some(dxf_strip)) => SPInstance::new(items, dxf_strip.height).into(),
-    //         (Some(_), Some(_)) => {
-    //             panic!("Both bins and strip packing specified, has to be one or the other")
-    //         }
-    //         (None, None) => panic!("Neither bins or strips specified"),
-    //     };
-
-    //     match &instance {
-    //         Instance::SP(spi) => {
-    //             log!(
-    //                 Level::Info,
-    //                 "[PARSE] strip packing instance \"{}\": {} items ({} unique), {} strip height",
-    //                 dxf_instance.name,
-    //                 spi.total_item_qty(),
-    //                 spi.items.len(),
-    //                 spi.strip_height
-    //             );
-    //         }
-    //         Instance::BP(bpi) => {
-    //             log!(
-    //                 Level::Info,
-    //                 "[PARSE] bin packing instance \"{}\": {} items ({} unique), {} bins ({} unique)",
-    //                 dxf_instance.name,
-    //                 bpi.total_item_qty(),
-    //                 bpi.items.len(),
-    //                 bpi.bins.iter().map(|(_, qty)| *qty).sum::<usize>(),
-    //                 bpi.bins.len()
-    //             );
-    //         }
-    //     }
-
-    //     instance
-    // }
 }
 
 /// Builds a `Solution` from a set of `JsonLayout`s and an `Instance`.
@@ -504,35 +443,6 @@ pub fn compose_json_solution(
         usage: solution.usage,
         run_time_sec: solution.time_stamp.duration_since(epoch).as_secs(),
     }
-}
-
-fn convert_json_simple_poly(
-    s_json_shape: &JsonSimplePoly,
-    simpl_config: PolySimplConfig,
-    simpl_mode: PolySimplMode,
-) -> SimplePolygon {
-    let shape = SimplePolygon::new(json_simple_poly_to_points(s_json_shape));
-
-    let shape = match simpl_config {
-        PolySimplConfig::Enabled { tolerance } => {
-            polygon_simplification::simplify_shape(&shape, simpl_mode, tolerance)
-        }
-        PolySimplConfig::Disabled => shape,
-    };
-
-    shape
-}
-
-fn dxf_poly_line_to_points(dpl: &LwPolyline) -> Vec<Point> {
-    //Strip the last vertex if it is the same as the first one
-    let n_vertices = match dpl.vertices[0].x == dpl.vertices[dpl.vertices.len() - 1].x {
-        true => dpl.vertices.len() - 1,
-        false => dpl.vertices.len(),
-    };
-
-    (0..n_vertices)
-        .map(|i| Point::from(dpl.vertices[i].x, dpl.vertices[i].y))
-        .collect_vec()
 }
 
 fn convert_json_simple_poly(
