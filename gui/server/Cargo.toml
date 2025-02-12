@@ -9,8 +9,8 @@ rocket = { version = "0.5.1", features = ["json"] }
 rocket_cors = "0.6.0"
 serde = { version = "1.0", features = ["derive"] }
 tera = "1"
-jagua-rs = { path = "../../jagua-rs" , version = "0.1.1", features = [] }
-lbf = { path = "../../lbf" , version = "0.1.1", features = [] }
+jagua-rs = { path = "../../jagua-rs" , version = "0.2.0", features = [] }
+lbf = { path = "../../lbf" , version = "0.2.0", features = [] }
 
 
 [dependencies.rocket_dyn_templates]
