@@ -9,47 +9,89 @@ import init, * as wasm from "../../wasm/pkg/wasm";
 
 const SVGManipulation = () => {
     const svgRef = useRef<SVGSVGElement>(null);
+    const isRKeyPressedRef = useRef(false);
 
     useEffect(() => {
-        const uses = svgRef!.current!.querySelectorAll("g > use");
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "r" || event.key === "R") {
+                isRKeyPressedRef.current = true;
+            }
+        };
+
+        const handleKeyUp = (event: KeyboardEvent) => {
+            if (event.key === "r" || event.key === "R") {
+                isRKeyPressedRef.current = false;
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("keyup", handleKeyUp);
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("keyup", handleKeyUp);
+        };
+    }, []);
+
+    useEffect(() => {
+        const svgElement = svgRef.current;
+        if (!svgElement) return;
+
+        const uses = svgElement.querySelectorAll("g > use");
 
         uses.forEach((use) => {
             const element = d3.select(use);
 
+            let transform = null;
+            let translateMatch: number[] = [];
+            let isElementSelected = false;
+
+            const elementSelected = (event: d3.D3DragEvent<SVGUseElement, unknown, unknown>) => {
+                const rotateElement = () => {
+                    if (isElementSelected && isRKeyPressedRef.current) {
+                        transform = element.attr("transform");
+                        translateMatch = transform.match(/[-+]?\d*\.?\d+/g)?.map(Number) || [];
+                        if (translateMatch) {
+                            translateMatch[2] = (translateMatch[2] + 1) % 360; // Increment rotation
+                            element.attr(
+                                "transform",
+                                `translate(${event.x}, ${event.y}) rotate(${translateMatch[2]})`
+                            );
+                        }
+
+                        requestAnimationFrame(rotateElement);
+                    }
+                };
+
+                rotateElement();
+            };
+
             const drag = d3
                 .drag()
                 .subject(function () {
-                    const transform = element.attr("transform");
-                    const translateMatch = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+                    transform = element.attr("transform");
+                    translateMatch = transform.match(/[-+]?\d*\.?\d+/g)?.map(Number) || [];
                     if (translateMatch) {
                         return {
-                            x: parseFloat(translateMatch[1]),
-                            y: parseFloat(translateMatch[2]),
+                            x: translateMatch[0],
+                            y: translateMatch[1],
                         };
                     }
                     return { x: 0, y: 0 };
-                    // return { x: path.attr("x"), y: path.attr("y") };
                 })
                 .on("start", function (event) {
-                    const transform = element.attr("transform");
-                    const translateMatch = transform
-                        ? transform.match(/translate\(([^,]+),\s*([^)]+)\)/)
-                        : null;
-                    if (translateMatch) {
-                        console.log(translateMatch);
-                        event.subject.x = parseFloat(translateMatch[1].split(" ")[0]);
-                        event.subject.y = parseFloat(translateMatch[1].split(" ")[1]);
-                    }
-                    console.log(event.subject.x, event.subject.y);
-
+                    isElementSelected = true;
+                    elementSelected(event);
                     wasm.toggle_box();
                 })
                 .on("drag", function (event) {
-                    console.log(event.x, event.y);
-
-                    element.attr("transform", `translate(${event.x}, ${event.y})`);
+                    element.attr(
+                        "transform",
+                        `translate(${event.x}, ${event.y}), rotate(${translateMatch[2]})`
+                    );
                 })
                 .on("end", function () {
+                    isElementSelected = false;
                     wasm.toggle_box();
                 });
 
@@ -57,9 +99,7 @@ const SVGManipulation = () => {
         });
 
         init()
-            .then(() => {
-                console.log("WASM Module Loaded:", Object.keys(wasm));
-            })
+            .then(() => {})
             .catch(console.error);
     }, []);
 
