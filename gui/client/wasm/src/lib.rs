@@ -6,6 +6,8 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::*;
 
+use jaguars::jaguars::CDEngine;
+
 #[wasm_bindgen]
 pub fn run() {
     let document = window().unwrap().document().unwrap();
@@ -101,4 +103,11 @@ pub fn toggle_box() {
     } else {
         test_box.set_attribute("class", "green").unwrap();
     }
+}
+
+#[wasm_bindgen]
+pub fn SVGCollision(SVG: String) {
+    console::log_1(&"svg_collision".into());
+
+    console::log_1(&SVG.into());
 }
