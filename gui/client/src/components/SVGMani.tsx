@@ -42,6 +42,12 @@ const SVGManipulation = () => {
         uses.forEach((use) => {
             const element = d3.select(use);
 
+            const titleElement = use.querySelector("title");
+            if (titleElement) {
+                const titleText = titleElement.textContent;
+                console.log("Title Text:", titleText);
+            }
+
             let transform = null;
             let translateMatch: number[] = [];
             let isElementSelected = false;
