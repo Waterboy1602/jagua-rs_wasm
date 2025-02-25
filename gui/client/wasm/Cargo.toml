@@ -13,7 +13,8 @@ default = ["console_error_panic_hook"]
 [dependencies]
 wasm-bindgen = "0.2.84"
 web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "EventTarget", "MouseEvent", "console"] }
-
+getrandom = { version = "^0.2", features = ["js"] }
+jagua-rs = { path = "../../../jagua-rs" , version = "0.2.0", features = [] }
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires

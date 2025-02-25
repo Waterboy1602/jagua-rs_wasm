@@ -6,7 +6,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::*;
 
-use jaguars::jaguars::CDEngine;
+use jagua_rs::collision_detection::cd_engine::CDEngine;
 
 #[wasm_bindgen]
 pub fn run() {

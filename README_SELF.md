@@ -24,3 +24,6 @@ See [README.md](./gui/server/README.md)
 Install: `cargo install wasm-pack`  
 Build: `wasm-pack build --target web`
 `cargo watch -s "wasm-pack build --target web"`
+
+Heb `getrandom = { version = "^0.2", features = ["js"] }` moeten toevoegen aan `Cargo.toml` om foutmelding te vermijden  
+Ook _Clang_ nodig om foutmelding te vermijden: [LLVM](https://github.com/llvm/llvm-project)
