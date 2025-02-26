@@ -1,6 +1,9 @@
 mod utils;
 
+use serde::{Deserialize, Serialize};
+use serde_wasm_bindgen::{from_value, to_value};
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
@@ -106,8 +109,18 @@ pub fn toggle_box() {
 }
 
 #[wasm_bindgen]
-pub fn SVGCollision(SVG: String) {
-    console::log_1(&"svg_collision".into());
+pub fn SVGCollision(js_value: JsValue) -> Result<JsValue, JsValue> {
+    let moved_element: HashMap<String, Option<String>> = match from_value(js_value) {
+        Ok(val) => val,
+        Err(e) => return Err(JsValue::from_str(&format!("Error deserializing: {}", e))),
+    };
+    console::log_1(&"svg_collision_testtttt".into());
 
-    console::log_1(&SVG.into());
+    match to_value(&moved_element) {
+        Ok(js_val) => {
+            console::log_1(&js_val); // log the value to the console.
+            return Ok(js_val); // Return the serialized JsValue
+        }
+        Err(e) => return Err(JsValue::from_str(&format!("Error serializing: {}", e))),
+    }
 }
