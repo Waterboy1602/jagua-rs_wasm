@@ -1,8 +1,8 @@
 [package]
-name = "wasm"
+name = "wasm-jagua-rs"
 version = "0.1.0"
-authors = ["Wannes Van de Putte <wannes.vandeputte@brightanalytics.eu>"]
-edition = "2018"
+authors = ["Wannes"]
+edition = "2024"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -13,7 +13,7 @@ default = ["console_error_panic_hook"]
 [dependencies]
 wasm-bindgen = "0.2.84"
 web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "EventTarget", "MouseEvent", "console"] }
-getrandom = { version = "^0.2", features = ["js"] }
+getrandom = { version = "0.2", features = ["js"] }
 jagua-rs = { path = "../../../jagua-rs" , version = "0.2.0", features = [] }
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
