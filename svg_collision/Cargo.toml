@@ -1,0 +1,12 @@
+[package]
+name = "svg_collision"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+svgtypes = "0.15"
+svg = "0.18.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+jagua-rs = { path = "./../jagua-rs" , version = "0.2.0", features = [] }
+
