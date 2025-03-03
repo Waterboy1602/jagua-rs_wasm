@@ -1,5 +1,8 @@
 use std::fs::File;
 use std::io::BufReader;
+use std::sync::Arc;
+
+use slotmap::SlotMap;
 
 // use svgtypes::{PathParser, PathSegment};
 
@@ -31,7 +34,6 @@ pub fn svg_to_layout_from_file(path: &str, id: usize) -> Result<Layout, String> 
     let reader = BufReader::new(file);
 
     let mut bin_shape = None;
-    // TODO Slotmap - undeclared type???
     let mut placed_items = SlotMap::with_key();
 
     for event in svg::parser::Parser::new(reader) {
@@ -70,7 +72,8 @@ pub fn svg_to_layout_from_file(path: &str, id: usize) -> Result<Layout, String> 
     // TODO fix construct of bin: more arguments needed
     let bin = Bin::new(bin_shape);
     // TODO fix construct of CDengine: more arguments needed
-    let cde = CDEngine::new(); // Initialize collision detection engine
+    let outer = Arc::new(outer);
+    let cde = CDEngine::new(outer.bbox().inflate_to_square(), bin_hazards, cde_config);
 
     Ok(Layout {
         id,
