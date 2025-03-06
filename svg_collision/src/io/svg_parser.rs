@@ -19,12 +19,13 @@ use jagua_rs::collision_detection::cd_engine::CDEngine;
 use jagua_rs::entities::bin::Bin;
 use jagua_rs::entities::placed_item::PlacedItem;
 // use jagua_rs::geometry::primitives::edge::Edge;
+use jagua_rs::entities::instances::instance::Instance;
 use jagua_rs::entities::layout::Layout;
 use jagua_rs::geometry::primitives::point::Point;
 use jagua_rs::geometry::primitives::simple_polygon::SimplePolygon;
 
 /// Parses an SVG file and converts it into a `Layout` object.
-pub fn svg_to_layout_from_file(path: &str, id: usize) -> Result<Layout, String> {
+pub fn svg_to_layout_from_file(path: &str, id: usize) -> Instance {
     let file = File::open(path).map_err(|e| format!("Failed to open SVG file: {}", e))?;
     let reader = BufReader::new(file);
 
@@ -65,17 +66,21 @@ pub fn svg_to_layout_from_file(path: &str, id: usize) -> Result<Layout, String> 
 
     let bin_shape = bin_shape.ok_or("No valid bin shape found in SVG")?;
     // TODO fix construct of bin: more arguments needed
-    let bin = Bin::new(bin_shape);
-    // TODO fix construct of CDengine: more arguments needed
-    let outer = Arc::new(outer);
-    let cde = CDEngine::new(outer.bbox().inflate_to_square(), bin_hazards, cde_config);
-
-    Ok(Layout {
+    // let bin = Bin::new(bin_shape);
+    let bin = Bin::new(
         id,
-        bin,
-        placed_items,
-        cde,
-    })
+        bin_shape,
+        0,
+        Transformation::empty(),
+        vec![],
+        vec![],
+        cde_config,
+    );
+    // TODO fix construct of CDengine: more arguments needed
+
+    let instance: Instance = Instance::new(id, bin, placed_items);
+
+    instance
 }
 
 fn parse_path_data(data: &str) -> Result<SimplePolygon, String> {
@@ -107,9 +112,9 @@ fn parse_polygon_points(points_str: &str) -> Result<SimplePolygon, String> {
         .split_whitespace()
         .filter_map(|pair| {
             let mut coords = pair.split(',');
-            let x = coords.next()?.parse().ok()?;
-            let y = coords.next()?.parse().ok()?;
-            Some(Point(x as f32, y as f32))
+            let x = coords.next()?.parse::<f32>().ok()?;
+            let y = coords.next()?.parse::<f32>().ok()?;
+            Some(Point(x, y))
         })
         .collect();
 

@@ -25,7 +25,7 @@ use jagua_rs::geometry::primitives::point::Point;
 use jagua_rs::geometry::primitives::simple_polygon::SimplePolygon;
 
 use crate::config::Config;
-use svg_collision::io::svg_parser::svg_to_layout_from_file;
+use svg_collision::io::svg_parser;
 
 fn main() {
     let config = match args.config_file {
@@ -50,10 +50,6 @@ fn main() {
         }
     };
 
-    let instance: Instance;
-
-    match svg_to_layout_from_file("./assets/1.svg", 1) {
-        Ok(_layout) => println!("Successfully loaded layout!"),
-        Err(err) => eprintln!("Error: {}", err),
-    }
+    let parser = svg_parser::new(config);
+    let instance = parser.svg_to_layout_from_file("./assets/1.svg", 1);
 }
