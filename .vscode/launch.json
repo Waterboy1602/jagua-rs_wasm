@@ -5,15 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(Windows) Launch",
+            "name": "LBF",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceRoot}/lbf/target/debug/lbf.exe",
             "args": [
                 // "-i", "${workspaceRoot}/assets/dxf/albano_dxf.json",
-                "-i", "${workspaceRoot}/assets/albano.json",
-                "-c", "${workspaceRoot}/assets/config_lbf.json",
-                "-s", "${workspaceRoot}/solutions",
+                "-i",
+                "${workspaceRoot}/assets/albano.json",
+                "-c",
+                "${workspaceRoot}/assets/config_lbf.json",
+                "-s",
+                "${workspaceRoot}/solutions"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
@@ -21,5 +24,17 @@
             "console": "integratedTerminal",
             "preLaunchTask": "cargo build"
         },
+        {
+            "name": "SVG Collision",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/svg_collision/target/debug/svg_collision.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "environment": [],
+            "console": "integratedTerminal",
+            "preLaunchTask": "cargo build"
+        }
     ]
 }
