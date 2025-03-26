@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "LBF",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/lbf/target/debug/lbf.exe",
             "args": [
@@ -18,21 +18,17 @@
                 "-s",
                 "${workspaceRoot}/solutions"
             ],
-            "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
-            "environment": [],
             "console": "integratedTerminal",
             "preLaunchTask": "cargo build"
         },
         {
             "name": "SVG Collision",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/svg_collision/target/debug/svg_collision.exe",
             "args": [],
-            "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
-            "environment": [],
             "console": "integratedTerminal",
             "preLaunchTask": "cargo build"
         }

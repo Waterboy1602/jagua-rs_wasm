@@ -64,6 +64,8 @@ impl SvgParser {
                         );
                         if let Ok(polygon) = Self::parse_path_data(d) {
                             println!("{:?}", polygon);
+                        } else {
+                            println!("Failed to parse path data: {:?}", d);
                         }
                     }
                 }
@@ -84,12 +86,12 @@ impl SvgParser {
         let mut parts = data.split_whitespace().peekable();
 
         while let Some(command) = parts.next() {
+            println!("Parsed command: {:?}", command);
             match command {
-                "M" | "L" => {
-                    let coords = parts
-                        .next()
-                        .ok_or_else(|| "Missing coordinates".to_string())?;
-                    let mut coord_parts = coords.split(',');
+                s if s.starts_with("M") || s.starts_with("L") => {
+                    let command = command.replace("M", "");
+                    let command = command.replace("L", "");
+                    let mut coord_parts = command.split(',');
                     let x = coord_parts
                         .next()
                         .ok_or_else(|| "Missing x coordinate".to_string())?
