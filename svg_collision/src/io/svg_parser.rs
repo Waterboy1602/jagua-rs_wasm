@@ -16,10 +16,11 @@ use jagua_rs::entities::placed_item::PlacedItem;
 use jagua_rs::entities::instances::instance::Instance;
 // use jagua_rs::entities::layout::Layout;
 use crate::config::Config;
+use jagua_rs::entities::item::Item;
+use jagua_rs::geometry::geo_enums::AllowedRotation;
 use jagua_rs::geometry::primitives::point::Point;
 use jagua_rs::geometry::primitives::simple_polygon::SimplePolygon;
 use jagua_rs::geometry::transformation::Transformation;
-
 pub struct SvgParser {
     config: Config,
 }
@@ -30,7 +31,7 @@ impl SvgParser {
     }
 
     // Parses an SVG file and converts it into a `Layout` object.
-    pub fn svg_to_layout_from_file(path: &str, id: usize) -> Result<(), String> {
+    pub fn svg_to_layout_from_file(&self, path: &str) -> Result<(), String> {
         let mut file = File::open(path).map_err(|e| format!("Failed to open SVG file: {}", e))?;
         let mut content = String::new();
         file.read_to_string(&mut content)
@@ -42,12 +43,20 @@ impl SvgParser {
         let mut inside_defs = false;
         let mut inside_group = false;
 
+        let mut item_id = 0; // Initialize item_id
+
         for event in Parser::new(&content) {
             match event {
                 Event::Tag("defs", _, attributes) => {
                     inside_defs = !inside_group;
                     if let Some(id) = attributes.get("id") {
                         println!("Found <defs> with id: {:?}", id.to_string());
+                        item_id = id
+                            .rsplit('_')
+                            .next()
+                            .ok_or_else(|| "Missing item id".to_string())?
+                            .parse::<usize>()
+                            .unwrap_or(0);
                     }
                 }
                 Event::Tag("g", _, attributes) if inside_defs => {
@@ -62,11 +71,8 @@ impl SvgParser {
                             "Found <path> inside <g> inside <defs> with d: {:?}",
                             d.to_string()
                         );
-                        if let Ok(polygon) = Self::parse_path_data(d) {
-                            println!("{:?}", polygon);
-                        } else {
-                            println!("Failed to parse path data: {:?}", d);
-                        }
+                        let polygon_item = self.parse_path_data(d, item_id);
+                        println!("{:?}", polygon_item);
                     }
                 }
                 Event::Tag("polygon", _, attributes) => {
@@ -81,29 +87,21 @@ impl SvgParser {
         Ok(()) // Return Ok(()) if successful
     }
 
-    fn parse_path_data(data: &str) -> Result<Vec<(f64, f64)>, String> {
+    fn parse_path_data(&self, data: &str, item_id: usize) -> Item {
         let mut points = Vec::new();
         let mut parts = data.split_whitespace().peekable();
 
         while let Some(command) = parts.next() {
-            println!("Parsed command: {:?}", command);
             match command {
                 s if s.starts_with("M") || s.starts_with("L") => {
                     let command = command.replace("M", "");
                     let command = command.replace("L", "");
                     let mut coord_parts = command.split(',');
-                    let x = coord_parts
-                        .next()
-                        .ok_or_else(|| "Missing x coordinate".to_string())?
-                        .parse::<f64>()
-                        .map_err(|_| "Invalid x coordinate".to_string())?;
-                    let y = coord_parts
-                        .next()
-                        .ok_or_else(|| "Missing y coordinate".to_string())?
-                        .parse::<f64>()
-                        .map_err(|_| "Invalid y coordinate".to_string())?;
-                    points.push((x, y));
-                    println!("Parsed point: ({}, {})", x, y);
+                    let x = coord_parts.next().unwrap().parse::<f32>().unwrap();
+                    let y = coord_parts.next().unwrap().parse::<f32>().unwrap();
+
+                    let point = Point(x, y);
+                    points.push(point);
                 }
                 "z" => {
                     // Close path, no need to add points here
@@ -113,7 +111,23 @@ impl SvgParser {
                 }
             }
         }
-        Ok(points)
+        let shape = SimplePolygon::new(points.clone());
+
+        let allowed_orientations = AllowedRotation::Continuous; // Allow any rotation
+        let base_quality = 1; // Quality of the item (not yet supported) - max is = 1
+        let item_value = 0; // Value for knapsack problem (not yet supported)
+
+        let base_item = Item::new(
+            item_id,
+            shape,
+            allowed_orientations,
+            Some(base_quality),
+            item_value,
+            Transformation::empty(),
+            self.config.cde_config.item_surrogate_config.clone(),
+        );
+
+        base_item
     }
 
     fn parse_points_data(data: &str) -> Result<Vec<(f64, f64)>, String> {

@@ -32,5 +32,5 @@ fn main() {
 
     let config = Config::default();
     let parser = SvgParser::new(config);
-    let instance = SvgParser::svg_to_layout_from_file("./assets/1.svg", 1);
+    let instance = parser.svg_to_layout_from_file("./assets/1.svg");
 }
