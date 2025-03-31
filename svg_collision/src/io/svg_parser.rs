@@ -16,11 +16,13 @@ use jagua_rs::entities::placed_item::PlacedItem;
 use jagua_rs::entities::instances::instance::Instance;
 // use jagua_rs::entities::layout::Layout;
 use crate::config::Config;
+use jagua_rs::entities::instances::strip_packing::SPInstance;
 use jagua_rs::entities::item::Item;
 use jagua_rs::geometry::geo_enums::AllowedRotation;
 use jagua_rs::geometry::primitives::point::Point;
 use jagua_rs::geometry::primitives::simple_polygon::SimplePolygon;
 use jagua_rs::geometry::transformation::Transformation;
+
 pub struct SvgParser {
     config: Config,
 }
@@ -44,6 +46,7 @@ impl SvgParser {
         let mut inside_group = false;
 
         let mut item_id = 0; // Initialize item_id
+        let mut items = Vec::new();
 
         for event in Parser::new(&content) {
             match event {
@@ -66,6 +69,7 @@ impl SvgParser {
                     }
                 }
                 Event::Tag("path", _, attributes) if inside_defs && inside_group => {
+                    // TODO id 'bin' verwerken
                     if let Some(d) = attributes.get("d") {
                         println!(
                             "Found <path> inside <g> inside <defs> with d: {:?}",
@@ -73,6 +77,7 @@ impl SvgParser {
                         );
                         let polygon_item = self.parse_path_data(d, item_id);
                         println!("{:?}", polygon_item);
+                        items.push(polygon_item);
                     }
                 }
                 Event::Tag("polygon", _, attributes) => {
@@ -84,10 +89,12 @@ impl SvgParser {
             }
         }
 
+        let instance: Instance = BPInstance::new(items, bins).into();
+
         Ok(()) // Return Ok(()) if successful
     }
 
-    fn parse_path_data(&self, data: &str, item_id: usize) -> Item {
+    fn parse_path_data(&self, data: &str, item_id: usize) -> (Item, usize) {
         let mut points = Vec::new();
         let mut parts = data.split_whitespace().peekable();
 
@@ -117,7 +124,7 @@ impl SvgParser {
         let base_quality = 1; // Quality of the item (not yet supported) - max is = 1
         let item_value = 0; // Value for knapsack problem (not yet supported)
 
-        let base_item = Item::new(
+        let item = Item::new(
             item_id,
             shape,
             allowed_orientations,
@@ -127,7 +134,7 @@ impl SvgParser {
             self.config.cde_config.item_surrogate_config.clone(),
         );
 
-        base_item
+        (item, 1 as usize)
     }
 
     fn parse_points_data(data: &str) -> Result<Vec<(f64, f64)>, String> {
