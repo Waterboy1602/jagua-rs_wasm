@@ -10,13 +10,13 @@ use svg::parser::{Event, Parser};
 // use jagua_rs::collision_detection::hazard::HazardEntity;
 // use jagua_rs::collision_detection::quadtree::qt_hazard::QTHazPresence;
 // use jagua_rs::collision_detection::quadtree::qt_node::QTNode;
-use jagua_rs::entities::bin::Bin;
+use jagua_rs::entities::bin::{self, Bin};
 use jagua_rs::entities::placed_item::PlacedItem;
 // use jagua_rs::geometry::primitives::edge::Edge;
 use jagua_rs::entities::instances::instance::Instance;
 // use jagua_rs::entities::layout::Layout;
 use crate::config::Config;
-use jagua_rs::entities::instances::strip_packing::SPInstance;
+use jagua_rs::entities::instances::bin_packing::BPInstance;
 use jagua_rs::entities::item::Item;
 use jagua_rs::geometry::geo_enums::AllowedRotation;
 use jagua_rs::geometry::primitives::point::Point;
@@ -33,51 +33,58 @@ impl SvgParser {
     }
 
     // Parses an SVG file and converts it into a `Layout` object.
-    pub fn svg_to_layout_from_file(&self, path: &str) -> Result<(), String> {
+    pub fn svg_to_layout_from_file(&self, path: &str) -> Result<Instance, String> {
         let mut file = File::open(path).map_err(|e| format!("Failed to open SVG file: {}", e))?;
         let mut content = String::new();
         file.read_to_string(&mut content)
             .map_err(|e| format!("Failed to read SVG file: {}", e))?;
 
-        let mut bin_shape: Option<SimplePolygon> = None; // You might want to define a type for bin_shape
-        let mut placed_items: SlotMap<DefaultKey, Vec<(f64, f64)>> = SlotMap::with_key(); // Assuming polygon is Vec<(f64, f64)>
-
         let mut inside_defs = false;
         let mut inside_group = false;
 
         let mut item_id = 0; // Initialize item_id
+        let mut item_type = String::new(); // Initialize item_type with an empty string
         let mut items = Vec::new();
+        let mut bins = Vec::new();
 
         for event in Parser::new(&content) {
             match event {
                 Event::Tag("defs", _, attributes) => {
                     inside_defs = !inside_group;
-                    if let Some(id) = attributes.get("id") {
-                        println!("Found <defs> with id: {:?}", id.to_string());
-                        item_id = id
-                            .rsplit('_')
-                            .next()
-                            .ok_or_else(|| "Missing item id".to_string())?
-                            .parse::<usize>()
-                            .unwrap_or(0);
-                    }
                 }
                 Event::Tag("g", _, attributes) if inside_defs => {
                     inside_group = !inside_group;
                     if let Some(id) = attributes.get("id") {
                         println!("Found <g> inside <defs> with id: {:?}", id.to_string());
+                        let parts: Vec<&str> = id.split('_').collect();
+
+                        if parts.is_empty() {
+                            return Err("Missing item id/type".to_string());
+                        }
+
+                        item_type = parts[0].to_string();
+
+                        item_id = if parts.len() > 1 {
+                            parts[1].parse::<usize>().unwrap_or(0)
+                        } else {
+                            0 // Default to 0 if no id part is found
+                        };
                     }
                 }
                 Event::Tag("path", _, attributes) if inside_defs && inside_group => {
-                    // TODO id 'bin' verwerken
                     if let Some(d) = attributes.get("d") {
                         println!(
                             "Found <path> inside <g> inside <defs> with d: {:?}",
                             d.to_string()
                         );
-                        let polygon_item = self.parse_path_data(d, item_id);
-                        println!("{:?}", polygon_item);
-                        items.push(polygon_item);
+
+                        if item_type.to_lowercase() == "bin" {
+                            let bin_shape = self.parse_bin_data(d, item_id);
+                            bins.push(bin_shape);
+                        } else if item_type.to_lowercase() == "item" {
+                            let item_shape = self.parse_path_data(d, item_id);
+                            items.push(item_shape);
+                        }
                     }
                 }
                 Event::Tag("polygon", _, attributes) => {
@@ -91,7 +98,9 @@ impl SvgParser {
 
         let instance: Instance = BPInstance::new(items, bins).into();
 
-        Ok(()) // Return Ok(()) if successful
+        println!("Created instance: {:?}", instance);
+
+        Ok(instance)
     }
 
     fn parse_path_data(&self, data: &str, item_id: usize) -> (Item, usize) {
@@ -135,6 +144,44 @@ impl SvgParser {
         );
 
         (item, 1 as usize)
+    }
+
+    fn parse_bin_data(&self, data: &str, bin_id: usize) -> (Bin, usize) {
+        let mut points = Vec::new();
+        let mut parts = data.split_whitespace().peekable();
+
+        while let Some(command) = parts.next() {
+            match command {
+                s if s.starts_with("M") || s.starts_with("L") => {
+                    let command = command.replace("M", "");
+                    let command = command.replace("L", "");
+                    let mut coord_parts = command.split(',');
+                    let x = coord_parts.next().unwrap().parse::<f32>().unwrap();
+                    let y = coord_parts.next().unwrap().parse::<f32>().unwrap();
+
+                    let point = Point(x, y);
+                    points.push(point);
+                }
+                "z" => {
+                    // Close path, no need to add points here
+                }
+                _ => {
+                    // Handle or ignore other commands
+                }
+            }
+        }
+        let bin_shape = SimplePolygon::new(points.clone());
+
+        let bin = Bin::new(
+            bin_id,
+            bin_shape,
+            1,
+            Transformation::empty(),
+            vec![],
+            vec![],
+            self.config.cde_config.clone(),
+        );
+        (bin, 1)
     }
 
     fn parse_points_data(data: &str) -> Result<Vec<(f64, f64)>, String> {

@@ -7,6 +7,7 @@ use jagua_rs::util::config::{CDEConfig, SPSurrogateConfig};
 pub struct Config {
     /// Configuration of the Collision Detection Engine
     pub cde_config: CDEConfig,
+    pub prng_seed: Option<u64>,
 }
 
 impl Default for Config {
@@ -22,6 +23,7 @@ impl Default for Config {
                     n_ff_piers: 0,
                 },
             },
+            prng_seed: Some(0),
         }
     }
 }
