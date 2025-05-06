@@ -1,57 +1,20 @@
+use crate::collision_detection::CDEngine;
+use crate::collision_detection::hazards::Hazard;
+use crate::collision_detection::hazards::HazardEntity;
+use crate::collision_detection::quadtree::QTHazPresence;
+use crate::collision_detection::quadtree::QTHazard;
+use crate::collision_detection::quadtree::QTNode;
+use crate::entities::Layout;
+use crate::entities::LayoutSnapshot;
+use crate::geometry::primitives::Rect;
 use itertools::Itertools;
 use log::error;
 use std::collections::HashSet;
-
-use crate::collision_detection::cd_engine::CDEngine;
-use crate::collision_detection::hazard::Hazard;
-use crate::collision_detection::hazard::HazardEntity;
-use crate::collision_detection::hazard_filter;
-use crate::collision_detection::hazard_filter::CombinedHazardFilter;
-use crate::collision_detection::hazard_filter::EntityHazardFilter;
-use crate::collision_detection::hpg::hazard_proximity_grid::HazardProximityGrid;
-use crate::collision_detection::hpg::hpg_cell::HPGCellUpdate;
-use crate::collision_detection::quadtree::qt_hazard::QTHazPresence;
-use crate::collision_detection::quadtree::qt_hazard::QTHazard;
-use crate::collision_detection::quadtree::qt_node::QTNode;
-use crate::entities::bin::Bin;
-use crate::entities::item::Item;
-use crate::entities::layout::Layout;
-use crate::entities::layout::LayoutSnapshot;
-use crate::entities::problems::problem_generic::ProblemGeneric;
-use crate::entities::solution::Solution;
-use crate::geometry::geo_traits::{Shape, Transformable};
-use crate::geometry::primitives::aa_rectangle::AARectangle;
-use crate::geometry::transformation::Transformation;
-use crate::util;
-
 //Various checks to verify correctness of the state of the system
 //Used in debug_assertion!() blocks
 
-pub fn instance_item_bin_ids_correct(items: &[(Item, usize)], bins: &[(Bin, usize)]) -> bool {
-    items
-        .iter()
-        .enumerate()
-        .all(|(i, (item, _qty))| item.id == i)
-        && bins.iter().enumerate().all(|(i, (bin, _qty))| bin.id == i)
-}
-
-pub fn problem_matches_solution<P: ProblemGeneric>(problem: &P, solution: &Solution) -> bool {
-    for l in problem.layouts() {
-        let sl = solution
-            .layout_snapshots
-            .iter()
-            .find(|sl| sl.id == l.id())
-            .unwrap();
-        match layouts_match(l, sl) {
-            true => continue,
-            false => return false,
-        }
-    }
-    true
-}
-
 pub fn layouts_match(layout: &Layout, layout_snapshot: &LayoutSnapshot) -> bool {
-    if layout.bin.id != layout_snapshot.bin.id {
+    if layout.container.id != layout_snapshot.container.id {
         return false;
     }
     for placed_item in layout_snapshot.placed_items.values() {
@@ -80,65 +43,9 @@ pub fn collision_hazards_sorted_correctly(hazards: &[QTHazard]) -> bool {
                 }
             }
             QTHazPresence::None => {
-                panic!("None hazard in collision hazard vec");
+                panic!("None hazard should never be collision hazard vec");
             }
         };
-    }
-    true
-}
-
-pub fn all_bins_and_items_centered(items: &[(Item, usize)], bins: &[(Bin, usize)]) -> bool {
-    items
-        .iter()
-        .map(|(i, _)| i.shape.centroid())
-        .chain(bins.iter().map(|(b, _)| b.outer.centroid()))
-        .all(|c| almost::zero(c.0) && almost::zero(c.1))
-}
-
-pub fn item_to_place_does_not_collide(
-    item: &Item,
-    transformation: &Transformation,
-    layout: &Layout,
-) -> bool {
-    let haz_filter = &item.hazard_filter;
-
-    let shape = item.shape.as_ref();
-    let t_shape = shape.transform_clone(transformation);
-
-    let entities_to_ignore = haz_filter.as_ref().map_or(vec![], |f| {
-        hazard_filter::generate_irrelevant_hazards(f, layout.cde().all_hazards())
-    });
-
-    if layout
-        .cde()
-        .surrogate_collides(shape.surrogate(), transformation, &entities_to_ignore)
-        || layout.cde().poly_collides(&t_shape, &entities_to_ignore)
-    {
-        return false;
-    }
-    true
-}
-
-pub fn layout_is_collision_free(layout: &Layout) -> bool {
-    for (_, pi) in layout.placed_items().iter() {
-        let ehf = EntityHazardFilter(vec![pi.into()]);
-
-        let combo_filter = match &pi.hazard_filter {
-            None => CombinedHazardFilter {
-                filters: vec![Box::new(&ehf)],
-            },
-            Some(hf) => CombinedHazardFilter {
-                filters: vec![Box::new(&ehf), Box::new(hf)],
-            },
-        };
-        let entities_to_ignore =
-            hazard_filter::generate_irrelevant_hazards(&combo_filter, layout.cde().all_hazards());
-
-        if layout.cde().poly_collides(&pi.shape, &entities_to_ignore) {
-            println!("Collision detected for item {:.?}", pi.item_id);
-            util::print_layout(layout);
-            return false;
-        }
     }
     true
 }
@@ -254,10 +161,10 @@ pub fn layout_qt_matches_fresh_qt(layout: &Layout) -> bool {
     //check if every placed item is correctly represented in the quadtree
 
     //rebuild the quadtree
-    let bin = &layout.bin;
-    let mut fresh_cde = bin.base_cde.as_ref().clone();
-    for (_, pi) in layout.placed_items().iter() {
-        let hazard = Hazard::new(pi.into(), pi.shape.clone());
+    let container = &layout.container;
+    let mut fresh_cde = container.base_cde.as_ref().clone();
+    for (pk, pi) in layout.placed_items().iter() {
+        let hazard = Hazard::new((pk, pi).into(), pi.shape.clone());
         fresh_cde.register_hazard(hazard);
     }
 
@@ -266,6 +173,14 @@ pub fn layout_qt_matches_fresh_qt(layout: &Layout) -> bool {
 }
 
 fn qt_nodes_match(qn1: Option<&QTNode>, qn2: Option<&QTNode>) -> bool {
+    let hashable = |h: &QTHazard| {
+        let p_sk = match h.presence {
+            QTHazPresence::None => 0,
+            QTHazPresence::Partial(_) => 1,
+            QTHazPresence::Entire => 2,
+        };
+        (h.entity, h.active, p_sk)
+    };
     match (qn1, qn2) {
         (Some(qn1), Some(qn2)) => {
             //if both nodes exist
@@ -276,14 +191,14 @@ fn qt_nodes_match(qn1: Option<&QTNode>, qn2: Option<&QTNode>) -> bool {
             let active_haz_1 = hv1
                 .active_hazards()
                 .iter()
-                .map(|h| (&h.entity, h.active, (&h.presence).into()))
-                .collect::<HashSet<(&HazardEntity, bool, u8)>>();
+                .map(hashable)
+                .collect::<HashSet<(HazardEntity, bool, u8)>>();
 
             let active_haz_2 = hv2
                 .active_hazards()
                 .iter()
-                .map(|h| (&h.entity, h.active, (&h.presence).into()))
-                .collect::<HashSet<(&HazardEntity, bool, u8)>>();
+                .map(hashable)
+                .collect::<HashSet<(HazardEntity, bool, u8)>>();
 
             let active_in_1_but_not_2 = active_haz_1
                 .difference(&active_haz_2)
@@ -297,8 +212,7 @@ fn qt_nodes_match(qn1: Option<&QTNode>, qn2: Option<&QTNode>) -> bool {
                 let from_2 = **active_in_2_but_not_1.iter().next().unwrap();
                 println!("{}", from_1 == from_2);
                 error!(
-                    "Active hazards don't match {:?} vs {:?}",
-                    active_in_1_but_not_2, active_in_2_but_not_1
+                    "Active hazards don't match {active_in_1_but_not_2:?} vs {active_in_2_but_not_1:?}"
                 );
                 return false;
             }
@@ -325,7 +239,7 @@ fn qt_nodes_match(qn1: Option<&QTNode>, qn2: Option<&QTNode>) -> bool {
     ) {
         (None, None) => true,
         (Some(c1), None) => {
-            let qn1_has_partial_hazards = qn1.map_or(false, |qn| {
+            let qn1_has_partial_hazards = qn1.is_some_and(|qn| {
                 qn.hazards
                     .active_hazards()
                     .iter()
@@ -341,7 +255,7 @@ fn qt_nodes_match(qn1: Option<&QTNode>, qn2: Option<&QTNode>) -> bool {
             true
         }
         (None, Some(c2)) => {
-            let qn2_has_partial_hazards = qn2.map_or(false, |qn| {
+            let qn2_has_partial_hazards = qn2.is_some_and(|qn| {
                 qn.hazards
                     .active_hazards()
                     .iter()
@@ -387,59 +301,9 @@ fn hazards_match(chv1: &[Hazard], chv2: &[Hazard]) -> bool {
     true
 }
 
-pub fn hpg_update_no_affected_cells_remain(
-    to_register: &Hazard,
-    hpg: &mut HazardProximityGrid,
-) -> bool {
-    //To ensure the boundary fill algorithm did not miss any cells, we check all the cells to make sure no cells were affected
-    let old_cells = hpg.grid.cells.clone();
-
-    //do a full sweep of the grid, and collect the affected cells
-    let undetected_cells_indices = hpg
-        .grid
-        .cells
-        .iter_mut()
-        .enumerate()
-        .flat_map(|(i, cell)| cell.as_mut().map(|cell| (i, cell)))
-        .map(|(i, cell)| (i, cell.register_hazard(to_register)))
-        .filter(|(_i, res)| res == &HPGCellUpdate::Affected)
-        .map(|(i, _res)| i)
-        .collect_vec();
-
-    if !undetected_cells_indices.is_empty() {
-        //print the affected cells by row and col
-        let undetected_row_cols = undetected_cells_indices
-            .iter()
-            .map(|i| hpg.grid.to_row_col(*i).unwrap())
-            .collect_vec();
-        println!(
-            "{} detected affected cells, radius: {}",
-            undetected_cells_indices.len(),
-            hpg.cell_radius
-        );
-        for (&i, (row, col)) in undetected_cells_indices
-            .iter()
-            .zip(undetected_row_cols.iter())
-        {
-            println!(
-                "cell [{},{}] with {} neighbors",
-                row,
-                col,
-                hpg.grid.get_neighbors(i).map(|j| j != i).iter().count()
-            );
-            println!("old {:?}", &old_cells[i].as_ref().unwrap().uni_prox);
-            println!("new {:?}", &hpg.grid.cells[i].as_ref().unwrap().uni_prox);
-            println!()
-        }
-        false
-    } else {
-        true
-    }
-}
-
-/// Checks if the quadrants follow the layout set in [AARectangle::QUADRANT_NEIGHBOR_LAYOUT]
-pub fn quadrants_have_valid_layout(quadrants: &[&AARectangle; 4]) -> bool {
-    let layout = AARectangle::QUADRANT_NEIGHBOR_LAYOUT;
+/// Checks if the quadrants follow the layout set in [Rect::QUADRANT_NEIGHBOR_LAYOUT]
+pub fn quadrants_have_valid_layout(quadrants: &[Rect; 4]) -> bool {
+    let layout = Rect::QUADRANT_NEIGHBOR_LAYOUT;
     for (idx, q) in quadrants.iter().enumerate() {
         //make sure they share two points (an edge) with each neighbor
         let [n_0, n_1] = layout[idx];
@@ -451,16 +315,38 @@ pub fn quadrants_have_valid_layout(quadrants: &[&AARectangle; 4]) -> bool {
             2,
             n_0_corners
                 .iter()
-                .filter(|c| q_corners.iter().find(|qc| qc == c).is_some())
+                .filter(|c| q_corners.iter().any(|qc| &qc == c))
                 .count()
         );
         assert_eq!(
             2,
             n_1_corners
                 .iter()
-                .filter(|c| q_corners.iter().find(|qc| qc == c).is_some())
+                .filter(|c| q_corners.iter().any(|qc| &qc == c))
                 .count()
         );
     }
     true
+}
+
+///Prints code to rebuild a layout. Intended for debugging purposes.
+pub fn print_layout(layout: &Layout) {
+    println!(
+        "let mut layout = Layout::new(0, instance.container({}).clone());",
+        layout.container.id
+    );
+    println!();
+
+    for pi in layout.placed_items().values() {
+        let transformation_str = {
+            let t_decomp = &pi.d_transf;
+            let (tr, (tx, ty)) = (t_decomp.rotation(), t_decomp.translation());
+            format!("&DTransformation::new({tr:.6},({tx:.6},{ty:.6}))")
+        };
+
+        println!(
+            "layout.place_item(instance.item({}), {});",
+            pi.item_id, transformation_str
+        );
+    }
 }

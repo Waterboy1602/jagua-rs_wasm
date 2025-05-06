@@ -1,58 +1,78 @@
-use std::cmp::Ordering;
-
+use crate::geometry::Transformation;
 use crate::geometry::geo_enums::GeoPosition;
 use crate::geometry::geo_traits::{
-    CollidesWith, DistanceFrom, Shape, Transformable, TransformableFrom,
+    CollidesWith, DistanceTo, SeparationDistance, Transformable, TransformableFrom,
 };
-use crate::geometry::primitives::aa_rectangle::AARectangle;
-use crate::geometry::primitives::edge::Edge;
-use crate::geometry::primitives::point::Point;
-use crate::geometry::transformation::Transformation;
-use crate::{fsize, PI};
+use crate::geometry::primitives::Edge;
+use crate::geometry::primitives::Point;
+use crate::geometry::primitives::Rect;
+use anyhow::Result;
+use anyhow::ensure;
+use std::cmp::Ordering;
+use std::f32::consts::PI;
 
-/// Geometric primitive representing a circle
-#[derive(Clone, Debug, PartialEq)]
+/// Circle
+#[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Circle {
     pub center: Point,
-    pub radius: fsize,
+    pub radius: f32,
 }
 
 impl Circle {
-    pub fn new(center: Point, radius: fsize) -> Self {
-        debug_assert!(
+    pub fn try_new(center: Point, radius: f32) -> Result<Self> {
+        ensure!(
             radius.is_finite() && radius >= 0.0,
-            "invalid circle radius: {}",
-            radius
+            "invalid circle radius: {radius}",
         );
-        debug_assert!(
+        ensure!(
             center.0.is_finite() && center.1.is_finite(),
-            "invalid circle center: {:?}",
-            center
+            "invalid circle center: {center:?}",
         );
 
-        Self { center, radius }
+        Ok(Self { center, radius })
     }
 
     /// Returns the smallest possible circle that fully contains all ```circles```
     pub fn bounding_circle<'a>(circles: impl IntoIterator<Item = &'a Circle>) -> Circle {
         let mut circles = circles.into_iter();
-        let mut bounding_circle = circles.next().expect("no circles provided").clone();
+        let mut bounding_circle = *circles.next().expect("no circles provided");
 
         for circle in circles {
-            let distance_between_centers = bounding_circle.center.distance(circle.center);
+            let distance_between_centers = bounding_circle.center.distance_to(&circle.center);
             if bounding_circle.radius < distance_between_centers + circle.radius {
                 // circle not contained in bounding circle, expand
-                let diameter = Edge::new(bounding_circle.center, circle.center)
-                    .extend_at_front(bounding_circle.radius)
-                    .extend_at_back(circle.radius);
+                let diameter = Edge {
+                    start: bounding_circle.center,
+                    end: circle.center,
+                }
+                .extend_at_front(bounding_circle.radius)
+                .extend_at_back(circle.radius);
 
-                let new_radius = diameter.diameter() / 2.0;
-                let new_center = diameter.centroid();
-
-                bounding_circle = Circle::new(new_center, new_radius);
+                bounding_circle = Circle {
+                    center: diameter.centroid(),
+                    radius: diameter.length() / 2.0,
+                }
             }
         }
         bounding_circle
+    }
+
+    pub fn area(&self) -> f32 {
+        self.radius * self.radius * PI
+    }
+
+    pub fn bbox(&self) -> Rect {
+        let (r, x, y) = (self.radius, self.center.0, self.center.1);
+        Rect {
+            x_min: x - r,
+            y_min: y - r,
+            x_max: x + r,
+            y_max: y + r,
+        }
+    }
+
+    pub fn diameter(&self) -> f32 {
+        self.radius * 2.0
     }
 }
 
@@ -88,20 +108,20 @@ impl CollidesWith<Circle> for Circle {
 
 impl CollidesWith<Edge> for Circle {
     fn collides_with(&self, edge: &Edge) -> bool {
-        edge.sq_distance(&self.center) <= self.radius.powi(2)
+        edge.sq_distance_to(&self.center) <= self.radius.powi(2)
     }
 }
 
-impl CollidesWith<AARectangle> for Circle {
+impl CollidesWith<Rect> for Circle {
     #[inline(always)]
-    fn collides_with(&self, rect: &AARectangle) -> bool {
+    fn collides_with(&self, rect: &Rect) -> bool {
         //Based on: https://yal.cc/rectangle-circle-intersection-test/
 
         let Point(c_x, c_y) = self.center;
 
         //x and y coordinates inside the rectangle, closest to the circle center
-        let nearest_x = fsize::max(rect.x_min, fsize::min(c_x, rect.x_max));
-        let nearest_y = fsize::max(rect.y_min, fsize::min(c_y, rect.y_max));
+        let nearest_x = f32::max(rect.x_min, f32::min(c_x, rect.x_max));
+        let nearest_y = f32::max(rect.y_min, f32::min(c_y, rect.y_max));
 
         (nearest_x - c_x).powi(2) + (nearest_y - c_y).powi(2) <= self.radius.powi(2)
     }
@@ -109,16 +129,12 @@ impl CollidesWith<AARectangle> for Circle {
 
 impl CollidesWith<Point> for Circle {
     fn collides_with(&self, point: &Point) -> bool {
-        point.sq_distance(self.center) <= self.radius.powi(2)
+        point.sq_distance_to(&self.center) <= self.radius.powi(2)
     }
 }
 
-impl DistanceFrom<Point> for Circle {
-    fn sq_distance(&self, other: &Point) -> fsize {
-        self.distance(other).powi(2)
-    }
-
-    fn distance(&self, point: &Point) -> fsize {
+impl DistanceTo<Point> for Circle {
+    fn distance_to(&self, point: &Point) -> f32 {
         let Point(x, y) = point;
         let Point(cx, cy) = self.center;
         let sq_d = (x - cx).powi(2) + (y - cy).powi(2);
@@ -126,40 +142,48 @@ impl DistanceFrom<Point> for Circle {
             0.0 //point is inside circle
         } else {
             //point is outside circle
-            fsize::sqrt(sq_d) - self.radius
+            f32::sqrt(sq_d) - self.radius
         }
     }
 
-    fn distance_from_border(&self, point: &Point) -> (GeoPosition, fsize) {
+    fn sq_distance_to(&self, other: &Point) -> f32 {
+        self.distance_to(other).powi(2)
+    }
+}
+
+impl SeparationDistance<Point> for Circle {
+    fn separation_distance(&self, point: &Point) -> (GeoPosition, f32) {
         let Point(x, y) = point;
         let Point(cx, cy) = self.center;
-        let d_center = fsize::sqrt((x - cx).powi(2) + (y - cy).powi(2));
+        let d_center = f32::sqrt((x - cx).powi(2) + (y - cy).powi(2));
         match d_center.partial_cmp(&self.radius).unwrap() {
             Ordering::Less | Ordering::Equal => (GeoPosition::Interior, self.radius - d_center),
             Ordering::Greater => (GeoPosition::Exterior, d_center - self.radius),
         }
     }
 
-    fn sq_distance_from_border(&self, point: &Point) -> (GeoPosition, fsize) {
-        let (pos, distance) = self.distance_from_border(point);
+    fn sq_separation_distance(&self, point: &Point) -> (GeoPosition, f32) {
+        let (pos, distance) = self.separation_distance(point);
         (pos, distance.powi(2))
     }
 }
 
-impl DistanceFrom<Circle> for Circle {
-    fn sq_distance(&self, other: &Circle) -> fsize {
-        self.distance(other).powi(2)
-    }
-
-    fn distance(&self, other: &Circle) -> fsize {
-        match self.distance_from_border(other) {
+impl DistanceTo<Circle> for Circle {
+    fn distance_to(&self, other: &Circle) -> f32 {
+        match self.separation_distance(other) {
             (GeoPosition::Interior, _) => 0.0,
             (GeoPosition::Exterior, d) => d,
         }
     }
 
-    fn distance_from_border(&self, other: &Circle) -> (GeoPosition, fsize) {
-        let sq_center_dist = self.center.sq_distance(other.center);
+    fn sq_distance_to(&self, other: &Circle) -> f32 {
+        self.distance_to(other).powi(2)
+    }
+}
+
+impl SeparationDistance<Circle> for Circle {
+    fn separation_distance(&self, other: &Circle) -> (GeoPosition, f32) {
+        let sq_center_dist = self.center.sq_distance_to(&other.center);
         let sq_radii_sum = (self.radius + other.radius).powi(2);
         if sq_center_dist < sq_radii_sum {
             let dist = sq_radii_sum.sqrt() - sq_center_dist.sqrt();
@@ -170,26 +194,28 @@ impl DistanceFrom<Circle> for Circle {
         }
     }
 
-    fn sq_distance_from_border(&self, other: &Circle) -> (GeoPosition, fsize) {
-        let (pos, distance) = self.distance_from_border(other);
+    fn sq_separation_distance(&self, other: &Circle) -> (GeoPosition, f32) {
+        let (pos, distance) = self.separation_distance(other);
         (pos, distance.powi(2))
     }
 }
 
-impl DistanceFrom<Edge> for Circle {
-    fn sq_distance(&self, e: &Edge) -> fsize {
-        self.distance(e).powi(2)
-    }
-
-    fn distance(&self, e: &Edge) -> fsize {
-        match self.distance_from_border(e) {
+impl DistanceTo<Edge> for Circle {
+    fn distance_to(&self, e: &Edge) -> f32 {
+        match self.separation_distance(e) {
             (GeoPosition::Interior, _) => 0.0,
             (GeoPosition::Exterior, d) => d,
         }
     }
 
-    fn distance_from_border(&self, e: &Edge) -> (GeoPosition, fsize) {
-        let distance_to_center = e.distance(&self.center);
+    fn sq_distance_to(&self, e: &Edge) -> f32 {
+        self.distance_to(e).powi(2)
+    }
+}
+
+impl SeparationDistance<Edge> for Circle {
+    fn separation_distance(&self, e: &Edge) -> (GeoPosition, f32) {
+        let distance_to_center = e.distance_to(&self.center);
         if distance_to_center < self.radius {
             (GeoPosition::Interior, self.radius - distance_to_center)
         } else {
@@ -197,27 +223,8 @@ impl DistanceFrom<Edge> for Circle {
         }
     }
 
-    fn sq_distance_from_border(&self, e: &Edge) -> (GeoPosition, fsize) {
-        let (pos, distance) = self.distance_from_border(e);
+    fn sq_separation_distance(&self, e: &Edge) -> (GeoPosition, f32) {
+        let (pos, distance) = self.separation_distance(e);
         (pos, distance.powi(2))
-    }
-}
-
-impl Shape for Circle {
-    fn centroid(&self) -> Point {
-        self.center
-    }
-
-    fn area(&self) -> fsize {
-        self.radius * self.radius * PI
-    }
-
-    fn bbox(&self) -> AARectangle {
-        let (r, x, y) = (self.radius, self.center.0, self.center.1);
-        AARectangle::new(x - r, y - r, x + r, y + r)
-    }
-
-    fn diameter(&self) -> fsize {
-        self.radius * 2.0
     }
 }

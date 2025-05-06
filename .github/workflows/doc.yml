@@ -1,13 +1,7 @@
-name: Docs
+name: Deploy docs
 
 on:
   push:
-    branches: [ "main" ]
-    paths:
-      - '**.rs'
-      - '**.toml'
-      - '**.yml'
-  pull_request:
     branches: [ "main" ]
     paths:
       - '**.rs'
@@ -22,16 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
       - name: Build and deploy jagua-rs docs
-        run: |
-          cd lbf
-          RUSTDOCFLAGS="-D warnings" cargo doc --all
+        run: RUSTDOCFLAGS="-D warnings" cargo doc --all
       - name: Deploy docs
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.DOCS_PAT }}
           branch: gh-pages
-          folder: lbf/target/doc
+          folder: target/doc
           clean: true
           repository-name: JeroenGar/jagua-rs-docs
           commit-message: "auto deploy docs"

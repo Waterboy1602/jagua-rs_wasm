@@ -3,60 +3,45 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
 
-use log::{info, log, Level, LevelFilter};
+use crate::EPOCH;
+use log::{Level, LevelFilter, info, log};
+use serde::Serialize;
 use svg::Document;
 
-use jagua_rs::io::json_instance::JsonInstance;
-
-use crate::io::json_output::JsonOutput;
-use crate::EPOCH;
+use anyhow::{Context, Result};
+use jagua_rs::probs::bpp::io::ext_repr::ExtBPInstance;
+use jagua_rs::probs::spp::io::ext_repr::ExtSPInstance;
 
 pub mod cli;
-pub mod json_output;
-pub mod layout_to_svg;
-pub mod svg_export;
-pub mod svg_util;
+pub mod output;
 
-// Path
-pub fn read_json_instance(path: Option<&Path>, json_str: Option<&String>) -> JsonInstance {
-    if path.is_some() {
-        let path = path.unwrap();
-        let file = File::open(path).unwrap_or_else(|err| {
-            panic!("could not open instance file: {}, {}", path.display(), err)
-        });
-        let reader = BufReader::new(file);
-        serde_json::from_reader(reader).unwrap_or_else(|err| {
-            panic!("could not parse instance file: {}, {}", path.display(), err)
-        })
-    } else if json_str.is_some() {
-        let json_str = json_str.unwrap();
-        serde_json::from_str(json_str)
-            .unwrap_or_else(|err| panic!("could not parse string: {}", err))
-    } else {
-        panic!("No instance file or json string provided")
-    }
+pub fn read_spp_instance(path: &Path) -> Result<ExtSPInstance> {
+    let file = File::open(path).context("could not open instance file")?;
+    serde_json::from_reader(BufReader::new(file))
+        .context("not a valid strip packing instance (ExtSPInstance)")
 }
 
-pub fn write_json_output(json_output: &JsonOutput, path: &Path) {
-    let file = File::create(path)
-        .unwrap_or_else(|_| panic!("could not open solution file: {}", path.display()));
+pub fn read_bpp_instance(path: &Path) -> Result<ExtBPInstance> {
+    let file = File::open(path).context("could not open instance file")?;
+    serde_json::from_reader(BufReader::new(file))
+        .context("not a valid bin packing instance (ExtBPInstance)")
+}
 
+pub fn write_json(json: &impl Serialize, path: &Path) -> Result<()> {
+    let file = File::create(path)?;
     let writer = BufWriter::new(file);
 
-    serde_json::to_writer_pretty(writer, &json_output)
-        .unwrap_or_else(|_| panic!("could not write solution file: {}", path.display()));
+    serde_json::to_writer_pretty(writer, &json)?;
 
     info!(
         "Solution JSON written to file://{}",
-        fs::canonicalize(path)
-            .expect("could not canonicalize path")
-            .to_str()
-            .unwrap()
+        fs::canonicalize(path)?.to_str().unwrap()
     );
+    Ok(())
 }
 
-pub fn write_svg(document: &Document, path: &Path) {
-    svg::save(path, document).expect("failed to write svg file");
+pub fn write_svg(document: &Document, path: &Path) -> Result<()> {
+    svg::save(path, document)?;
     info!(
         "Solution SVG written to file://{}",
         fs::canonicalize(path)
@@ -64,9 +49,10 @@ pub fn write_svg(document: &Document, path: &Path) {
             .to_str()
             .unwrap()
     );
+    Ok(())
 }
 
-pub fn init_logger(level_filter: LevelFilter) {
+pub fn init_logger(level_filter: LevelFilter) -> Result<()> {
     fern::Dispatch::new()
         // Perform allocation-free log formatting
         .format(|out, message, record| {
@@ -87,16 +73,12 @@ pub fn init_logger(level_filter: LevelFilter) {
                 thread_name,
             );
 
-            out.finish(format_args!("{:<27}{}", prefix, message))
+            out.finish(format_args!("{prefix:<27}{message}"))
         })
-        // Add blanket level filter -
+        // Add blanket level filter
         .level(level_filter)
         .chain(std::io::stdout())
-        .apply()
-        .expect("could not initialize logger");
-    log!(
-        Level::Info,
-        "Epoch: {}",
-        humantime::format_rfc3339_seconds(std::time::SystemTime::now())
-    );
+        .apply()?;
+    log!(Level::Info, "Epoch: {}", jiff::Timestamp::now());
+    Ok(())
 }

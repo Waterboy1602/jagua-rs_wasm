@@ -1,17 +1,20 @@
-use crate::collision_detection::hazard_filter::QZHazardFilter;
-use crate::entities::item::Item;
-use crate::geometry::d_transformation::DTransformation;
+use crate::collision_detection::hazards::filter::QZHazardFilter;
+use crate::entities::Item;
+use crate::geometry::DTransformation;
 use crate::geometry::geo_traits::Transformable;
-use crate::geometry::primitives::simple_polygon::SimplePolygon;
+use crate::geometry::primitives::SPolygon;
 use slotmap::new_key_type;
 use std::sync::Arc;
 
+#[cfg(doc)]
+use crate::entities::Layout;
+
 new_key_type! {
-    /// Unique key for each `PlacedItem` in a layout.
+    /// Unique key for each [`PlacedItem`] in a layout.
     pub struct PItemKey;
 }
 
-/// Represents an `Item` that has been placed in a `Layout`
+/// Represents an [`Item`] that has been placed in a [`Layout`]
 #[derive(Clone, Debug)]
 pub struct PlacedItem {
     /// ID of the type of `Item` that was placed
@@ -21,13 +24,13 @@ pub struct PlacedItem {
     /// The filter for hazards that the `Item` is unaffected by
     pub hazard_filter: Option<QZHazardFilter>,
     /// The shape of the `Item` after it has been transformed and placed in a `Layout`
-    pub shape: Arc<SimplePolygon>,
+    pub shape: Arc<SPolygon>,
 }
 
 impl PlacedItem {
     pub fn new(item: &Item, d_transf: DTransformation) -> Self {
         let transf = d_transf.compose();
-        let shape = Arc::new(item.shape.transform_clone(&transf));
+        let shape = Arc::new(item.shape_cd.transform_clone(&transf));
         let qz_haz_filter = item.hazard_filter.clone();
 
         PlacedItem {

@@ -1,16 +1,23 @@
 {
-  "Name": "shirts",
-  "Items": [
+  "name": "shirts",
+  "items": [
     {
+<<<<<<< HEAD
       "Demand": 8,
       "DemandMax": 8,
       "AllowedOrientations": [
+=======
+      "id": 0,
+      "demand": 8,
+      "dxf": "dxf/i_0.dxf",
+      "allowed_orientations": [
+>>>>>>> upstream/main
         0.0,
         180.0
       ],
-      "Shape": {
-        "Type": "SimplePolygon",
-        "Data": [
+      "shape": {
+        "type": "simple_polygon",
+        "data": [
           [
             0.0,
             0.0
@@ -51,15 +58,22 @@
       }
     },
     {
+<<<<<<< HEAD
       "Demand": 8,
       "DemandMax": 8,
       "AllowedOrientations": [
+=======
+      "id": 1,
+      "demand": 8,
+      "dxf": "dxf/i_1.dxf",
+      "allowed_orientations": [
+>>>>>>> upstream/main
         0.0,
         180.0
       ],
-      "Shape": {
-        "Type": "SimplePolygon",
-        "Data": [
+      "shape": {
+        "type": "simple_polygon",
+        "data": [
           [
             0.0,
             0.0
@@ -108,15 +122,22 @@
       }
     },
     {
+<<<<<<< HEAD
       "Demand": 8,
       "DemandMax": 8,
       "AllowedOrientations": [
+=======
+      "id": 2,
+      "demand": 8,
+      "dxf": "dxf/i_2.dxf",
+      "allowed_orientations": [
+>>>>>>> upstream/main
         0.0,
         180.0
       ],
-      "Shape": {
-        "Type": "SimplePolygon",
-        "Data": [
+      "shape": {
+        "type": "simple_polygon",
+        "data": [
           [
             0.0,
             0.0
@@ -165,15 +186,22 @@
       }
     },
     {
+<<<<<<< HEAD
       "Demand": 15,
       "DemandMax": 15,
       "AllowedOrientations": [
+=======
+      "id": 3,
+      "demand": 15,
+      "dxf": "dxf/i_3.dxf",
+      "allowed_orientations": [
+>>>>>>> upstream/main
         0.0,
         180.0
       ],
-      "Shape": {
-        "Type": "SimplePolygon",
-        "Data": [
+      "shape": {
+        "type": "simple_polygon",
+        "data": [
           [
             0.0,
             0.0
@@ -202,15 +230,22 @@
       }
     },
     {
+<<<<<<< HEAD
       "Demand": 15,
       "DemandMax": 15,
       "AllowedOrientations": [
+=======
+      "id": 4,
+      "demand": 15,
+      "dxf": "dxf/i_4.dxf",
+      "allowed_orientations": [
+>>>>>>> upstream/main
         0.0,
         180.0
       ],
-      "Shape": {
-        "Type": "SimplePolygon",
-        "Data": [
+      "shape": {
+        "type": "simple_polygon",
+        "data": [
           [
             0.0,
             0.0
@@ -235,15 +270,22 @@
       }
     },
     {
+<<<<<<< HEAD
       "Demand": 15,
       "DemandMax": 15,
       "AllowedOrientations": [
+=======
+      "id": 5,
+      "demand": 15,
+      "dxf": "dxf/i_5.dxf",
+      "allowed_orientations": [
+>>>>>>> upstream/main
         0.0,
         180.0
       ],
-      "Shape": {
-        "Type": "SimplePolygon",
-        "Data": [
+      "shape": {
+        "type": "simple_polygon",
+        "data": [
           [
             0.0,
             0.0
@@ -268,15 +310,22 @@
       }
     },
     {
+<<<<<<< HEAD
       "Demand": 15,
       "DemandMax": 15,
       "AllowedOrientations": [
+=======
+      "id": 6,
+      "demand": 15,
+      "dxf": "dxf/i_6.dxf",
+      "allowed_orientations": [
+>>>>>>> upstream/main
         0.0,
         180.0
       ],
-      "Shape": {
-        "Type": "SimplePolygon",
-        "Data": [
+      "shape": {
+        "type": "simple_polygon",
+        "data": [
           [
             0.0,
             0.0
@@ -301,15 +350,22 @@
       }
     },
     {
+<<<<<<< HEAD
       "Demand": 15,
       "DemandMax": 15,
       "AllowedOrientations": [
+=======
+      "id": 7,
+      "demand": 15,
+      "dxf": "dxf/i_7.dxf",
+      "allowed_orientations": [
+>>>>>>> upstream/main
         0.0,
         180.0
       ],
-      "Shape": {
-        "Type": "SimplePolygon",
-        "Data": [
+      "shape": {
+        "type": "simple_polygon",
+        "data": [
           [
             0.0,
             0.0
@@ -350,7 +406,5 @@
       }
     }
   ],
-  "Strip": {
-    "Height": 40.0
-  }
+  "strip_height": 40.0
 }

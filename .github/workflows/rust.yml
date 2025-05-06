@@ -18,58 +18,23 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  formatting:
+  jagua-rs-ci:
+    name: jagua-rs CI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check formatting jagua-rs
-        run: |
-          cd jagua-rs
-          cargo fmt --all -- --check
-      - name: Check formatting lbf
-        run: |
-          cd lbf
-          cargo fmt --all -- --check
-  build_jaguars:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build jagua-rs (f32)
-        run: |
-          cd jagua-rs
-          cargo build --all-targets
-          cargo doc
-      - name: Build jagua-rs (f64)
-        run: |
-          cd jagua-rs
-          cargo build --all-targets --features double-precision
-          cargo doc
-  build_lbf:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build LBF targets
-        run: |
-          cd lbf
-          cargo build --all-targets
-      - name: Build docs
-        run: |
-          cd lbf
-          cargo doc
-  tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run tests
-        run: |
-          cd lbf
-          cargo test --verbose
-
-  example_in_readme:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Runs the example in the README
-        run: |
-          cd lbf
-          cargo run --release -- -i ../assets/swim.json -c ../assets/config_lbf.json -s ../solutions
+      - uses: dtolnay/rust-toolchain@stable
+      - name: fmt
+        run: cargo fmt --all -- --check
+      - name: build all features
+        run: cargo build --all-targets --all-features
+      - name: build no features
+        run: cargo build --all-targets --no-default-features
+      - name: clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+      - name: doc
+        run: cargo doc
+      - name: test
+        run: cargo test --verbose
+      - name: run README example
+        run: cargo run --package lbf --profile release -- -p spp -i assets/swim.json -c assets/config_lbf.json -s solutions

@@ -1,34 +1,31 @@
-use crate::fsize;
-use crate::geometry::primitives::point::Point;
-use crate::geometry::primitives::simple_polygon::SimplePolygon;
+use crate::geometry::primitives::Point;
+use crate::geometry::primitives::SPolygon;
 use ordered_float::OrderedFloat;
 
-/// Returns the indices of the points in the [SimplePolygon] that form the [convex hull](https://en.wikipedia.org/wiki/Convex_hull)
-pub fn convex_hull_indices(shape: &SimplePolygon) -> Vec<usize> {
-    let c_hull = convex_hull_from_points(shape.points.clone());
+/// Returns the indices of the points in the [`SPolygon`] that form the convex hull
+pub fn convex_hull_indices(shape: &SPolygon) -> Vec<usize> {
+    let c_hull = convex_hull_from_points(shape.vertices.clone());
     let mut indices = vec![];
     for p in c_hull.iter() {
-        indices.push(shape.points.iter().position(|x| x == p).unwrap());
+        indices.push(shape.vertices.iter().position(|x| x == p).unwrap());
     }
     indices
 }
 
-pub fn convex_hull_from_shapes<'a>(
-    shapes: impl IntoIterator<Item = &'a SimplePolygon>,
-) -> Vec<Point> {
-    let mut ch_points = vec![];
-    for shape in shapes {
-        if let Some(surr) = shape.surrogate.as_ref() {
-            ch_points.extend(surr.convex_hull_indices.iter().map(|&i| shape.points[i]));
-        } else {
-            ch_points.extend(convex_hull_indices(shape).iter().map(|&i| shape.points[i]));
-        }
+/// Reconstitutes the convex hull of a [`SPolygon`] using its surrogate
+pub fn convex_hull_from_surrogate(s: &SPolygon) -> Result<Vec<Point>, &'static str> {
+    if let Some(surr) = s.surrogate.as_ref() {
+        Ok(surr
+            .convex_hull_indices
+            .iter()
+            .map(|&i| s.vertices[i])
+            .collect())
+    } else {
+        Err("No surrogate available")
     }
-
-    convex_hull_from_points(ch_points)
 }
 
-/// Filters a set of points to only include the points that form the [convex hull](https://en.wikipedia.org/wiki/Convex_hull)
+/// Filters a set of points to only include those that are part of the convex hull
 pub fn convex_hull_from_points(mut points: Vec<Point>) -> Vec<Point> {
     //https://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain
 
@@ -60,6 +57,6 @@ fn grow_convex_hull(mut h: Vec<Point>, next: Point) -> Vec<Point> {
     h
 }
 
-fn cross(a: Point, b: Point, c: Point) -> fsize {
+fn cross(a: Point, b: Point, c: Point) -> f32 {
     (b.0 - a.0) * (c.1 - a.1) - (b.1 - a.1) * (c.0 - a.0)
 }

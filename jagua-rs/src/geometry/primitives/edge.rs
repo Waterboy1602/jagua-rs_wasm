@@ -1,47 +1,42 @@
-use crate::fsize;
-use crate::geometry::geo_enums::GeoPosition;
-use crate::geometry::geo_traits::{
-    CollidesWith, DistanceFrom, Shape, Transformable, TransformableFrom,
-};
-use crate::geometry::primitives::aa_rectangle::AARectangle;
-use crate::geometry::primitives::point::Point;
-use crate::geometry::transformation::Transformation;
+use crate::geometry::Transformation;
+use crate::geometry::geo_traits::{CollidesWith, DistanceTo, Transformable, TransformableFrom};
+use crate::geometry::primitives::Point;
+use crate::geometry::primitives::Rect;
+use anyhow::Result;
+use anyhow::ensure;
 
-/// Geometric primitive representing a line segment
-#[derive(Clone, Debug, PartialEq)]
+/// Line segment between two [`Point`]s
+#[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Edge {
     pub start: Point,
     pub end: Point,
 }
 
 impl Edge {
-    pub fn new(start: Point, end: Point) -> Self {
-        if start == end {
-            panic!("degenerate edge, {start:?} == {end:?}");
-        }
-
-        Edge { start, end }
+    pub fn try_new(start: Point, end: Point) -> Result<Self> {
+        ensure!(start != end, "degenerate edge, {start:?} == {end:?}");
+        Ok(Edge { start, end })
     }
 
-    pub fn extend_at_front(mut self, d: fsize) -> Self {
+    pub fn extend_at_front(mut self, d: f32) -> Self {
         //extend the line at the front by distance d
         let (dx, dy) = (self.end.0 - self.start.0, self.end.1 - self.start.1);
-        let l = self.diameter();
+        let l = self.length();
         self.start.0 -= dx * (d / l);
         self.start.1 -= dy * (d / l);
         self
     }
 
-    pub fn extend_at_back(mut self, d: fsize) -> Self {
+    pub fn extend_at_back(mut self, d: f32) -> Self {
         //extend the line at the back by distance d
         let (dx, dy) = (self.end.0 - self.start.0, self.end.1 - self.start.1);
-        let l = self.diameter();
+        let l = self.length();
         self.end.0 += dx * (d / l);
         self.end.1 += dy * (d / l);
         self
     }
 
-    pub fn scale(mut self, factor: fsize) -> Self {
+    pub fn scale(mut self, factor: f32) -> Self {
         let (dx, dy) = (self.end.0 - self.start.0, self.end.1 - self.start.1);
         self.start.0 -= dx * (factor - 1.0) / 2.0;
         self.start.1 -= dy * (factor - 1.0) / 2.0;
@@ -91,20 +86,31 @@ impl Edge {
         Point(xx, yy)
     }
 
-    pub fn x_min(&self) -> fsize {
-        fsize::min(self.start.0, self.end.0)
+    pub fn x_min(&self) -> f32 {
+        f32::min(self.start.0, self.end.0)
     }
 
-    pub fn y_min(&self) -> fsize {
-        fsize::min(self.start.1, self.end.1)
+    pub fn y_min(&self) -> f32 {
+        f32::min(self.start.1, self.end.1)
     }
 
-    pub fn x_max(&self) -> fsize {
-        fsize::max(self.start.0, self.end.0)
+    pub fn x_max(&self) -> f32 {
+        f32::max(self.start.0, self.end.0)
     }
 
-    pub fn y_max(&self) -> fsize {
-        fsize::max(self.start.1, self.end.1)
+    pub fn y_max(&self) -> f32 {
+        f32::max(self.start.1, self.end.1)
+    }
+
+    pub fn length(&self) -> f32 {
+        self.start.distance_to(&self.end)
+    }
+
+    pub fn centroid(&self) -> Point {
+        Point(
+            (self.start.0 + self.end.0) / 2.0,
+            (self.start.1 + self.end.1) / 2.0,
+        )
     }
 }
 
@@ -128,50 +134,24 @@ impl TransformableFrom for Edge {
     }
 }
 
-impl Shape for Edge {
-    fn centroid(&self) -> Point {
-        Point(
-            (self.start.0 + self.end.0) / 2.0,
-            (self.start.1 + self.end.1) / 2.0,
-        )
+impl DistanceTo<Point> for Edge {
+    #[inline(always)]
+    fn distance_to(&self, point: &Point) -> f32 {
+        f32::sqrt(self.sq_distance_to(point))
     }
 
-    fn area(&self) -> fsize {
-        0.0
-    }
-
-    fn bbox(&self) -> AARectangle {
-        AARectangle::new(self.x_min(), self.y_min(), self.x_max(), self.y_max())
-    }
-
-    fn diameter(&self) -> fsize {
-        self.start.distance(self.end)
-    }
-}
-
-impl DistanceFrom<Point> for Edge {
-    fn sq_distance(&self, point: &Point) -> fsize {
+    #[inline(always)]
+    fn sq_distance_to(&self, point: &Point) -> f32 {
         let Point(x, y) = point;
         let Point(xx, yy) = self.closest_point_on_edge(point);
 
         let (dx, dy) = (x - xx, y - yy);
         dx.powi(2) + dy.powi(2)
     }
-
-    fn distance(&self, point: &Point) -> fsize {
-        fsize::sqrt(self.sq_distance(point))
-    }
-
-    fn distance_from_border(&self, point: &Point) -> (GeoPosition, fsize) {
-        (GeoPosition::Exterior, self.distance(point))
-    }
-
-    fn sq_distance_from_border(&self, point: &Point) -> (GeoPosition, fsize) {
-        (GeoPosition::Exterior, self.sq_distance(point))
-    }
 }
 
 impl CollidesWith<Edge> for Edge {
+    #[inline(always)]
     fn collides_with(&self, other: &Edge) -> bool {
         match edge_intersection(self, other, false) {
             Intersection::No => false,
@@ -180,16 +160,17 @@ impl CollidesWith<Edge> for Edge {
     }
 }
 
-impl CollidesWith<AARectangle> for Edge {
-    fn collides_with(&self, other: &AARectangle) -> bool {
+impl CollidesWith<Rect> for Edge {
+    #[inline(always)]
+    fn collides_with(&self, other: &Rect) -> bool {
         other.collides_with(self)
     }
 }
 
 #[inline(always)]
 fn edge_intersection(e1: &Edge, e2: &Edge, calculate_location: bool) -> Intersection {
-    if fsize::max(e1.x_min(), e2.x_min()) > fsize::min(e1.x_max(), e2.x_max())
-        || fsize::max(e1.y_min(), e2.y_min()) > fsize::min(e1.y_max(), e2.y_max())
+    if f32::max(e1.x_min(), e2.x_min()) > f32::min(e1.x_max(), e2.x_max())
+        || f32::max(e1.y_min(), e2.y_min()) > f32::min(e1.y_max(), e2.y_max())
     {
         //bounding boxes do not overlap
         return Intersection::No;

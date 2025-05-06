@@ -1,8 +1,12 @@
-# jagua-rs [![Rust CI](https://github.com/JeroenGar/jagua-rs/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/JeroenGar/jagua-rs/actions/workflows/rust.yml)[![Docs](https://github.com/JeroenGar/jagua-rs/actions/workflows/doc.yml/badge.svg)](https://jeroengar.github.io/jagua-rs-docs/jagua_rs/)
+# jagua-rs [![Rust CI](https://github.com/JeroenGar/jagua-rs/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/JeroenGar/jagua-rs/actions/workflows/rust.yml) [![Docs](https://github.com/JeroenGar/jagua-rs/actions/workflows/doc.yml/badge.svg)](https://jeroengar.github.io/jagua-rs-docs/jagua_rs/) [![Crates.io Version](https://img.shields.io/crates/v/jagua-rs)](https://crates.io/crates/jagua-rs) ![License](https://img.shields.io/crates/l/jagua-rs)
 
 ### A fast and fearless collision detection engine for 2D irregular cutting and packing problems.
 
+This library is designed to be used as a backend by optimization algorithms.
+
 <img src="img/jaguars_logo.svg" width="100%" height="300px" alt="jagua-rs logo">
+
+### ‼️ See [`sparrow`](https://github.com/JeroenGar/sparrow) for a state-of-the-art optimization algorithm based on `jagua-rs` ‼️
 
 ## Preamble
 
@@ -41,19 +45,21 @@ position without causing any *collisions*.
   - [x] Can resolve millions of collision queries per second
   - [x] Integrated preprocessor to simplify polygons
 - **Robust:**
-  - [x] Designed to mimic the exact results of a naive trigonometric approach
-  - [x] Special care is taken to handle edge cases caused by floating-point arithmetic
   - [x] Written in pure Rust 🦀
+  - [x] Designed to mimic the exact results of a naive trigonometric approach
+  - [x] Insensitive to the complexity of the shapes
+  - [x] Special care is taken to handle edge cases caused by floating-point arithmetic
 - **Adaptable:**
-  - [x] Define custom C&P problem variants by creating new `Instance` and accompanying `Problem` implementations
-  - [x] Add extra constraints by creating new `Hazards` and `HazardFilters`
-    - [x] `Hazards`: consolidation of all spatial constraints into a single model
+  - [x] Define custom C&P problem variants by creating new `Instance`, `Problem` and `Solution` implementations
+  - [x] Add additional constraints by creating new `Hazards` and `HazardFilters`
+    - [x] `Hazards`: abstraction of all spatial constraints into a single model
     - [x] `HazardFilters`: excluding specific `Hazards` from consideration on a per-query basis
 - **Currently supports:**
   - [x] Bin- & strip-packing problems
   - [x] Irregular-shaped items & bins
-  - [x] Continuous rotation & translation (double precision)
-  - [x] Holes and quality zones in the bin
+  - [x] Continuous rotation & translation
+  - [x] Holes and inferior quality zones in containers
+  - [x] Minimum separation distance between an item and any hazard
 
 ## `lbf` ↙️
 
@@ -63,6 +69,10 @@ most position.
 
 The code is thoroughly documented and should provide a good starting point for anyone interested building their own optimization algorithm on top
 of `jagua-rs`.
+
+⚠️ *Please note that `lbf` should not be used as an optimization algorithm for any real-world use case.
+Read the [Important note](#important-note) section for more information.
+See [`sparrow`](https://github.com/JeroenGar/sparrow) for a state-of-the-art optimization algorithm which leverages `jagua-rs`*
 
 ### How to run LBF
 
@@ -84,9 +94,10 @@ Concrete example:
 ```bash
 cd lbf
 cargo run --release -- \
-  -i ../assets/swim.json \
-  -c ../assets/config_lbf.json \
-  -s ../solutions
+  -i assets/swim.json \
+  -p spp \
+  -c assets/config_lbf.json \
+  -s solutions
 ```
 
 ### Input
@@ -138,22 +149,21 @@ The configuration file has the following structure:
 {
   "cde_config": { //Configuration of the collision detection engine
     "quadtree_depth": 5, //Maximum depth of the quadtree is 5
-    "hpg_n_cells": 2000, //The hazard proximity grid contains 2000 cells
     "item_surrogate_config": {
-      "pole_coverage_goal": 0.9, //The surrogate will stop generating poles when 90% of the item is covered
-      "max_poles": 10, //The surrogate will at most generate 10 poles
+      "n_pole_limits": [[100, 0.0], [20, 0.75], [10, 0.90]], //See docs for details 
       "n_ff_poles": 2, //Two poles will be used for fail-fast collision detection
       "n_ff_piers": 0 //Zero piers will be used for fail-fast collision detection
     }
   },
   "poly_simpl_tolerance": 0.001, //Polygons will be simplified until at most a 0.1% deviation in area from the original
+  "min_item_separation": 0.0, //Minimum distance between items and any hazard
   "prng_seed": 0, //Seed for the pseudo-random number generator. If undefined the outcome will be non-deterministic
   "n_samples": 5000, //5000 placement samples will be queried per item per layout
   "ls_frac": 0.2 //Of those 5000 samples, 80% will be sampled at uniformly at random, 20% will be local search samples
 }
 ```
 
-See [docs](https://jeroengar.github.io/jagua-rs-docs/lbf/lbf_config/struct.LBFConfig.html) for a detailed description of all available configuration options.
+See [docs](https://jeroengar.github.io/jagua-rs-docs/lbf/config/struct.LBFConfig.html) for a detailed description of all available configuration options.
 
 ### Important note
 
@@ -164,7 +174,7 @@ Seemingly superior configurations (such as increased `n_samples`), for example, 
 Omitting `prng_seed` in the config file disables the deterministic behavior and will demonstrate this variation in solution quality.
 
 **This heuristic merely serves as a reference implementation of how to use `jagua-rs` 
-and should probably not be used as an optimization algorithm for any real-world use case.**
+and should  not be used as an optimization algorithm for any real-world use case.**
 
 ## Documentation
 
@@ -177,6 +187,7 @@ Alternatively, you can compile and view the docs of older versions locally by us
 
 ## Testing
 
+The `jagua-rs` codebase contains a suite of assertion checks which verify the correctness of the engine.
 These `debug_asserts` are enabled by default in debug and test builds, but are omitted in release builds to maximize performance.
 
 Additionally, `lbf` contains some basic integration tests to validate the general correctness of the engine.
@@ -196,8 +207,9 @@ This project is licensed under Mozilla Public License 2.0 - see the [LICENSE](LI
 
 ## Acknowledgements
 
-This project began development at [KU Leuven](https://www.kuleuven.be/english/) and was funded by [Research Foundation - Flanders (FWO)](https://www.fwo.be/en/) (grant number: 1S71222N).
-
-<img src="https://upload.wikimedia.org/wikipedia/commons/9/97/Fonds_Wetenschappelijk_Onderzoek_logo_2024.svg" height="50px" alt="FWO logo">
-&nbsp;
+This project began development at the CODeS research group of [NUMA - KU Leuven](https://numa.cs.kuleuven.be/) and was funded by [Research Foundation - Flanders (FWO)](https://www.fwo.be/en/) (grant number: 1S71222N).
+<p>
 <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/KU_Leuven_logo.svg" height="50px" alt="KU Leuven logo">
+&nbsp;
+<img src="https://upload.wikimedia.org/wikipedia/commons/9/97/Fonds_Wetenschappelijk_Onderzoek_logo_2024.svg" height="50px" alt="FWO logo">
+</p>

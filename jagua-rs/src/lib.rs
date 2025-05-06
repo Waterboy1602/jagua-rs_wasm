@@ -1,38 +1,24 @@
 //!
 //! A fast and fearless Collision Detection Engine for 2D irregular cutting and packing problems.
 //!
-//!
-//! This crate can be configured to use single or double precision for floating points (see [fsize]).
+//! This library is designed to be used as a backend by optimization algorithms.
 
-/// Everything collision detection engine related
+#![doc = document_features::document_features!()]
+
+/// Everything related to the Collision Detection Engine
 pub mod collision_detection;
 
-/// Entities to model 2D irregular cutting and packing problems
+/// Entities to model 2D Irregular Cutting and Packing Problems
 pub mod entities;
 
 /// Geometric primitives and base algorithms
 pub mod geometry;
 
-/// Parser and JSON (de)serialization
+/// Importing problem instances into and exporting solutions out of this library
 pub mod io;
 
-/// Helper functions
+/// Helper functions which do not belong to any specific module
 pub mod util;
 
-cfg_if::cfg_if! {
-    if #[cfg(feature = "double-precision")] {
-        /// The floating point type used in jagua-rs.
-        /// ```f32``` by default, ```f64``` when feature **double-precision** is enabled.
-        #[allow(non_camel_case_types)]
-        pub type fsize = f64;
-        /// π as [fsize].
-        pub const PI : fsize = std::f64::consts::PI;
-    } else {
-        /// The floating point type used in jagua-rs.
-        /// ```f32``` by default, ```f64``` when feature **double-precision** is enabled.
-        #[allow(non_camel_case_types)]
-        pub type fsize = f32;
-        /// π as [fsize].
-        pub const PI: fsize = std::f32::consts::PI;
-    }
-}
+/// Enabled variants of the 2D irregular Cutting and Packing Problem.
+pub mod probs;

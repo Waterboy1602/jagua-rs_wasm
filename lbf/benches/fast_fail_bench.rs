@@ -1,24 +1,17 @@
-use std::fs::File;
-use std::io::BufReader;
-
-use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
+use crate::util::{N_ITEMS_REMOVED, create_base_config};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use itertools::Itertools;
-use rand::prelude::SmallRng;
-use rand::SeedableRng;
-
-use jagua_rs::entities::instances::instance_generic::InstanceGeneric;
-use jagua_rs::entities::problems::problem_generic::{LayoutIndex, ProblemGeneric};
-use jagua_rs::fsize;
+use jagua_rs::collision_detection::hazards::filter::NoHazardFilter;
+use jagua_rs::entities::Instance;
 use jagua_rs::geometry::convex_hull;
-use jagua_rs::geometry::fail_fast::sp_surrogate::SPSurrogate;
-use jagua_rs::geometry::fail_fast::{piers, poi};
-use jagua_rs::geometry::geo_traits::{Shape, TransformableFrom};
-use jagua_rs::geometry::primitives::circle::Circle;
-use jagua_rs::geometry::primitives::simple_polygon::SimplePolygon;
-use jagua_rs::io::json_instance::JsonInstance;
-use lbf::samplers::hpg_sampler::HPGSampler;
-
-use crate::util::{create_base_config, N_ITEMS_REMOVED, SWIM_PATH};
+use jagua_rs::geometry::fail_fast::{
+    SPSurrogate, SPSurrogateConfig, generate_piers, generate_surrogate_poles,
+};
+use jagua_rs::geometry::geo_traits::TransformableFrom;
+use jagua_rs::geometry::primitives::SPolygon;
+use lbf::samplers::uniform_rect_sampler::UniformRectSampler;
+use rand::SeedableRng;
+use rand::prelude::SmallRng;
 
 criterion_main!(benches);
 criterion_group!(benches, fast_fail_query_bench);
@@ -36,48 +29,39 @@ const N_SAMPLES_PER_ITER: usize = 1000;
 /// Benchmark the query operation of the quadtree for different depths
 /// We validate 1000 sampled transformations for each of the 5 removed items
 fn fast_fail_query_bench(c: &mut Criterion) {
-    let json_instance: JsonInstance =
-        serde_json::from_reader(BufReader::new(File::open(SWIM_PATH).unwrap())).unwrap();
-
     let mut group = c.benchmark_group("fast_fail_query_bench");
 
     let config_combos = FF_POLES
         .iter()
-        .map(|n_ff_poles| {
+        .flat_map(|n_ff_poles| {
             FF_PIERS
                 .iter()
                 .map(|n_ff_piers| (*n_ff_poles, *n_ff_piers))
                 .collect_vec()
         })
-        .flatten()
         .collect_vec();
 
     let mut config = create_base_config();
     config.cde_config.quadtree_depth = 5;
-    config.cde_config.hpg_n_cells = 2000;
 
-    let instance = util::create_instance(
-        &json_instance,
-        config.cde_config,
-        config.poly_simpl_tolerance,
-    );
-    let (problem, _) = util::create_blf_problem(instance.clone(), config, N_ITEMS_REMOVED);
+    let instance = util::create_instance(config.cde_config, config.poly_simpl_tolerance);
+    let (problem, _) = util::create_lbf_problem(instance.clone(), config, N_ITEMS_REMOVED);
 
     println!(
         "avg number of edges per item: {}",
         ITEMS_ID_TO_TEST
             .iter()
-            .map(|&item_id| instance.item(item_id).shape.number_of_points())
-            .sum::<usize>() as fsize
-            / ITEMS_ID_TO_TEST.len() as fsize
+            .map(|&item_id| instance.item(item_id).shape_cd.n_vertices())
+            .sum::<usize>() as f32
+            / ITEMS_ID_TO_TEST.len() as f32
     );
 
     let mut rng = SmallRng::seed_from_u64(0);
-    let layout = problem.get_layout(LayoutIndex::Real(0));
+    let layout = &problem.layout;
     let samples = ITEMS_ID_TO_TEST
         .iter()
         .map(|&item_id| {
-            let mut sampler = HPGSampler::new(instance.item(item_id), layout).unwrap();
+            let sampler = UniformRectSampler::new(layout.cde().bbox, instance.item(item_id));
             (0..N_TOTAL_SAMPLES)
                 .map(|_| sampler.sample(&mut rng))
                 .collect_vec()
@@ -90,7 +74,7 @@ fn fast_fail_query_bench(c: &mut Criterion) {
         let custom_surrogates = ITEMS_ID_TO_TEST
             .iter()
             .map(|&item_id| {
-                create_custom_surrogate(&instance.item(item_id).shape, n_ff_poles, n_ff_piers)
+                create_custom_surrogate(&instance.item(item_id).shape_cd, n_ff_poles, n_ff_piers)
             })
             .collect_vec();
 
@@ -108,7 +92,7 @@ fn fast_fail_query_bench(c: &mut Criterion) {
             .iter()
             .map(|&item_id| instance.item(item_id))
             .map(|item| {
-                let mut buffer = (*item.shape).clone();
+                let mut buffer = (*item.shape_cd).clone();
                 buffer.surrogate = None; //strip the surrogate for faster transforms, we don't need it for the buffer shape
                 buffer
             })
@@ -122,13 +106,17 @@ fn fast_fail_query_bench(c: &mut Criterion) {
                     let item = instance.item(item_id);
                     let surrogate = &custom_surrogates[i];
                     let buffer_shape = &mut buffer_shapes[i];
-                    for transf in samples_cyclers[i].next().unwrap() {
-                        let collides = match layout.cde().surrogate_collides(surrogate, transf, &[])
-                        {
+                    for dtransf in samples_cyclers[i].next().unwrap() {
+                        let transf = dtransf.compose();
+                        let collides = match layout.cde().surrogate_collides(
+                            surrogate,
+                            &transf,
+                            &NoHazardFilter,
+                        ) {
                             true => true,
                             false => {
-                                buffer_shape.transform_from(&item.shape, transf);
-                                layout.cde().poly_collides(&buffer_shape, &[])
+                                buffer_shape.transform_from(&item.shape_cd, &transf);
+                                layout.cde().poly_collides(buffer_shape, &NoHazardFilter)
                             }
                         };
                         match collides {
@@ -141,45 +129,45 @@ fn fast_fail_query_bench(c: &mut Criterion) {
         );
         println!(
             "{:.3}% valid",
-            n_valid as fsize / (n_invalid + n_valid) as fsize * 100.0
+            n_valid as f32 / (n_invalid + n_valid) as f32 * 100.0
         );
     }
     group.finish();
 }
 
 pub fn create_custom_surrogate(
-    simple_poly: &SimplePolygon,
+    simple_poly: &SPolygon,
     n_poles: usize,
     n_piers: usize,
 ) -> SPSurrogate {
-    let convex_hull_indices = convex_hull::convex_hull_indices(simple_poly);
-    let mut poles = vec![simple_poly.poi.clone()];
-    poles.extend(poi::generate_additional_surrogate_poles(
-        simple_poly,
-        n_poles.saturating_sub(1),
-        0.9,
-    ));
-    let poles_bounding_circle = Circle::bounding_circle(&poles);
+    let sp_config = SPSurrogateConfig {
+        n_pole_limits: [(n_poles, 0.0); 3],
+        n_ff_poles: n_poles,
+        n_ff_piers: n_piers,
+    };
 
-    let n_ff_poles = usize::min(n_poles, poles.len());
-    let relevant_poles_for_piers = &poles[0..n_ff_poles];
-    let piers = piers::generate(simple_poly, n_piers, relevant_poles_for_piers);
-    let convex_hull_area = SimplePolygon::new(
+    let convex_hull_indices = convex_hull::convex_hull_indices(simple_poly);
+    let mut poles = vec![simple_poly.poi];
+    poles.extend(generate_surrogate_poles(
+        simple_poly,
+        &sp_config.n_pole_limits,
+    ));
+
+    let piers = generate_piers(simple_poly, n_piers, &poles);
+    let convex_hull_area = SPolygon::new(
         convex_hull_indices
             .iter()
-            .map(|&i| simple_poly.points[i])
+            .map(|&i| simple_poly.vertices[i])
             .collect(),
     )
-    .area();
+    .unwrap()
+    .area;
 
-    let surrogate = SPSurrogate {
+    SPSurrogate {
         convex_hull_indices,
         poles,
         piers,
-        poles_bounding_circle,
-        n_ff_poles,
         convex_hull_area,
-    };
-
-    surrogate
+        config: sp_config,
+    }
 }
