@@ -1,11 +1,10 @@
 use std::fs;
 use std::fs::File;
 use std::io::BufReader;
-use std::path::{Path, {Path, PathBuf}Buf};
+use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
 use clap::Parser as ClapParser;
-use jagua_rs::io::json_instance::JsonInstance;
 use jagua_rs::io::import::Importer;
 use jagua_rs::io::svg::s_layout_to_svg;
 use jagua_rs::probs::bpp::io::ext_repr::ExtBPInstance;
