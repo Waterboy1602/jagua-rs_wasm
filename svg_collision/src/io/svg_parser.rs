@@ -10,18 +10,12 @@ use svg::parser::{Event, Parser};
 // use jagua_rs::collision_detection::hazard::HazardEntity;
 // use jagua_rs::collision_detection::quadtree::qt_hazard::QTHazPresence;
 // use jagua_rs::collision_detection::quadtree::qt_node::QTNode;
-use jagua_rs::entities::bin::{self, Bin};
-use jagua_rs::entities::placed_item::PlacedItem;
 // use jagua_rs::geometry::primitives::edge::Edge;
-use jagua_rs::entities::instances::instance::Instance;
-// use jagua_rs::entities::layout::Layout;
 use crate::config::Config;
-use jagua_rs::entities::instances::bin_packing::BPInstance;
-use jagua_rs::entities::item::Item;
-use jagua_rs::geometry::geo_enums::AllowedRotation;
-use jagua_rs::geometry::primitives::point::Point;
-use jagua_rs::geometry::primitives::simple_polygon::SimplePolygon;
-use jagua_rs::geometry::transformation::Transformation;
+use jagua_rs::entities::Instance;
+use jagua_rs::entities::Item;
+use jagua_rs::geometry::Transformation;
+use jagua_rs::probs::spp::entities::SPInstance;
 
 pub struct SvgParser {
     config: Config,
@@ -33,7 +27,8 @@ impl SvgParser {
     }
 
     // Parses an SVG file and converts it into a `Layout` object.
-    pub fn svg_to_layout_from_file(&self, path: &str) -> Result<Instance, String> {
+    // TODO START MET Strip Packing (SP)
+    pub fn svg_to_layout_from_file(&self, path: &str) -> Result<SPInstance, String> {
         let mut file = File::open(path).map_err(|e| format!("Failed to open SVG file: {}", e))?;
         let mut content = String::new();
         file.read_to_string(&mut content)
@@ -96,7 +91,7 @@ impl SvgParser {
             }
         }
 
-        let instance: Instance = BPInstance::new(items, bins).into();
+        let instance = SPInstance::new(items, bins).into();
 
         println!("Created instance: {:?}", instance);
 

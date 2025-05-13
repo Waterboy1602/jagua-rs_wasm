@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use jagua_rs::util::config::{CDEConfig, SPSurrogateConfig};
+use jagua_rs::collision_detection::CDEConfig;
+use jagua_rs::geometry::fail_fast::SPSurrogateConfig;
 
 /// Configuration for the LBF optimizer
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
@@ -15,10 +16,8 @@ impl Default for Config {
         Self {
             cde_config: CDEConfig {
                 quadtree_depth: 5,
-                hpg_n_cells: 2000,
                 item_surrogate_config: SPSurrogateConfig {
-                    pole_coverage_goal: 0.9,
-                    max_poles: 10,
+                    n_pole_limits: [(100, 0.0), (20, 0.75), (10, 0.90)],
                     n_ff_poles: 2,
                     n_ff_piers: 0,
                 },
