@@ -13,7 +13,7 @@ For most 2D drafting tasks, LWPolylines are the preferred choice due to their ef
 ### JAGUA-RS
 
 `cd lbf`
-`cargo run --release -- -i ../assets/swim.json -c ../assets/config_lbf.json -s ../solutions`
+`cargo run --release -- -i ../assets/swim.json -p spp -c ../assets/config_lbf.json -s ../solutions`
 
 ### JAGUAR-RS SERVER
 
