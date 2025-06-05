@@ -6,14 +6,14 @@
 
 ## Development
 
--   Rust
--   Rocket
--   React
--   Cargo watch
+- Rust
+- Rocket
+- React
+- Cargo watch
 
 `cargo watch -x run`
 
 ## Handig guides
 
--   [Rust Book](https://doc.rust-lang.org/book/)
--   [Rocket Docs](https://rocket.rs/guide/v0.5/introduction/)
+- [Rust Book](https://doc.rust-lang.org/book/)
+- [Rocket Docs](https://rocket.rs/guide/v0.5/introduction/)
