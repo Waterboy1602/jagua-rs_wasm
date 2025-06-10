@@ -1,7 +1,6 @@
 use itertools::Itertools;
 use jagua_rs::collision_detection::CDEConfig;
 use jagua_rs::entities::Instance;
-use jagua_rs::geometry::fail_fast::SPSurrogateConfig;
 use jagua_rs::io::import::Importer;
 use jagua_rs::probs::spp;
 use jagua_rs::probs::spp::entities::{SPInstance, SPPlacement, SPProblem};
@@ -40,7 +39,7 @@ pub fn create_lbf_problem(
     // Remove some items from the layout
     let placed_items_to_remove = problem
         .layout
-        .placed_items()
+        .placed_items
         .iter()
         .map(|(k, _)| k)
         .choose_multiple(&mut rng, n_items_removed);
@@ -48,7 +47,7 @@ pub fn create_lbf_problem(
     let p_opts = placed_items_to_remove
         .iter()
         .map(|k| {
-            let pi = &problem.layout.placed_items()[*k];
+            let pi = &problem.layout.placed_items[*k];
             SPPlacement {
                 item_id: pi.item_id,
                 d_transf: pi.d_transf,
@@ -57,7 +56,7 @@ pub fn create_lbf_problem(
         .collect_vec();
 
     for pkey in placed_items_to_remove {
-        let item_id = problem.layout.placed_items()[pkey].item_id;
+        let item_id = problem.layout.placed_items[pkey].item_id;
         problem.remove_item(pkey, true);
         info!(
             "Removed item: {} with {} edges",
@@ -73,27 +72,12 @@ pub fn create_lbf_problem(
         //     ..SvgDrawOptions::default()
         // };
         // let svg = layout_to_svg(&problem.layout, &instance, draw_options ,"");
-        //io::write_svg(&svg, Path::new("bench_layout.svg"));
+        // io::write_svg(&svg, Path::new("bench_layout.svg")).expect("Failed to save svg");
     }
 
     (problem, p_opts)
 }
 
 pub fn create_base_config() -> LBFConfig {
-    LBFConfig {
-        cde_config: CDEConfig {
-            quadtree_depth: 5,
-            item_surrogate_config: SPSurrogateConfig {
-                n_pole_limits: [(100, 0.0), (20, 0.75), (10, 0.90)],
-                n_ff_poles: 4,
-                n_ff_piers: 0,
-            },
-        },
-        poly_simpl_tolerance: Some(0.001),
-        min_item_separation: None,
-        prng_seed: Some(0),
-        n_samples: 5000,
-        ls_frac: 0.2,
-        svg_draw_options: Default::default(),
-    }
+    LBFConfig::default()
 }

@@ -1,32 +1,34 @@
-# jagua-rs [![Rust CI](https://github.com/JeroenGar/jagua-rs/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/JeroenGar/jagua-rs/actions/workflows/rust.yml) [![Docs](https://github.com/JeroenGar/jagua-rs/actions/workflows/doc.yml/badge.svg)](https://jeroengar.github.io/jagua-rs-docs/jagua_rs/) [![Crates.io Version](https://img.shields.io/crates/v/jagua-rs)](https://crates.io/crates/jagua-rs) ![License](https://img.shields.io/crates/l/jagua-rs)
+# jagua-rs [![Rust CI](https://github.com/JeroenGar/jagua-rs/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/JeroenGar/jagua-rs/actions/workflows/rust.yml) [![Docs](https://github.com/JeroenGar/jagua-rs/actions/workflows/doc.yml/badge.svg)](https://jeroengar.github.io/jagua-rs/jagua_rs/) [![Perf](https://github.com/JeroenGar/jagua-rs/actions/workflows/bench.yml/badge.svg)](https://jeroengar.github.io/jagua-rs/benchmarks/) [![Crates.io Version](https://img.shields.io/crates/v/jagua-rs)](https://crates.io/crates/jagua-rs) ![License](https://img.shields.io/crates/l/jagua-rs)
 
 ### A fast and fearless collision detection engine for 2D irregular cutting and packing problems.
 
-This library is designed to be used as a backend by optimization algorithms.
+This library is designed to be used as a backend by optimization algorithms solving 2D irregular cutting and packing problems.
 
 <img src="img/jaguars_logo.svg" width="100%" height="300px" alt="jagua-rs logo">
 
-### ‼️ See [`sparrow`](https://github.com/JeroenGar/sparrow) for a state-of-the-art optimization algorithm based on `jagua-rs` ‼️
+> [!IMPORTANT]
+> See [`sparrow`](https://github.com/JeroenGar/sparrow) for a state-of-the-art optimization algorithm based on `jagua-rs`
 
-## Preamble
+## Preamble & Motivation
 
-2D irregular cutting and packing (C&P) problems are a class of combinatorial optimization problems that involve placing irregular
+2D irregular cutting and packing (C&P), or nesting, problems are a class of combinatorial optimization problems that involve placing irregular
 shaped items into containers in an efficient way.
-These problems contain two distinct challenges:
+These problems pose two distinct challenges:
 
-* **Optimization**: deciding which items to place in which configuration in order to optimize some objective function.
-* **Geometric**: ensuring a placement is feasible. Does the item fit in the container? Does it not collide
-  with other items?
+* **Optimization**: searching for the best configuration in which to place the items according to some objective function.
+* **Geometric**: ensuring the solution is feasible. Are all items placed entirely in the container? Do none of them collide
+  with each other?
 
-Previously, those tackling these problems have had to address both challenges simultaneously.
-This is particulary demanding given that it requires two distinct sets of expertise and lots of research & development effort.
+Previously, researchers and practitioners tackling nesting problems have had to address both challenges simultaneously, 
+requiring two distinct sets of expertise and a lot of research & development effort.
 
-**This project aims to decouple the two challenges by providing a Collision Detection Engine (CDE) that can efficiently handle the
+**This project aims to decouple the two challenges by providing an adaptable Collision Detection Engine (CDE) that can efficiently handle the
 geometric aspects of 2D irregular C&P problems.**
-The CDE's main responsibility is determining if an item can be placed at a certain location without causing any *collisions*, which would render a solution infeasible.
-The CDE embedded in `jagua-rs` is powerful enough to resolve millions of these collision queries every second.
 
-`jagua-rs` enables you to confidently focus on the combinatorial aspects of the optimization challenge at hand, without
+The CDE's main responsibility is providing a fast and reliable answer to the question: *Can I place this item here without causing any collisions? And if not, which entities would collide with it?*
+
+The CDE embedded in `jagua-rs` is powerful enough to answer millions of these collision queries every second.
+It enables you to confidently focus on the combinatorial aspects of the optimization challenge at hand, without
 having to worry about the underlying geometry.
 
 In addition, a reference implementation of a basic optimization algorithm built on top of `jagua-rs` is provided in the `lbf` crate.
@@ -34,45 +36,47 @@ In addition, a reference implementation of a basic optimization algorithm built 
 ## `jagua-rs` 🐆
 
 `jagua-rs` includes all components required to create an **easily manipulable internal representation** of 2D
-irregular C&P problems.
-It also boasts a powerful **Collision Detection Engine (CDE)** which determines whether an item can fit at a specific
-position without causing any *collisions*.
+irregular C&P problems and boasts a **powerful Collision Detection Engine (CDE)** to efficiently resolve collision queries.
 
 ### Design Goals
 
 - **Performant:**
-  - [x] Focus on maximum performance, both in terms of query resolution and update speed
-  - [x] Can resolve millions of collision queries per second
-  - [x] Integrated preprocessor to simplify polygons
+  - [x] Focused on maximum performance, both in terms of query resolution and update speed
+  - [x] Resolves millions of collision queries per second
+  - [x] Simplifies polygons using an integrated preprocessor preserving feasibility of the exact original shape.
 - **Robust:**
-  - [x] Written in pure Rust 🦀
-  - [x] Designed to mimic the exact results of a naive trigonometric approach
+  - [x] Designed to mimic a naive trigonometric approach
+  - [x] Special care is taken to avoid numerical instability due to floating-point arithmetic
   - [x] Insensitive to the complexity of the shapes
-  - [x] Special care is taken to handle edge cases caused by floating-point arithmetic
+  - [x] Written in pure Rust 🦀
 - **Adaptable:**
   - [x] Define custom C&P problem variants by creating new `Instance`, `Problem` and `Solution` implementations
-  - [x] Add additional constraints by creating new `Hazards` and `HazardFilters`
+  - [x] Define additional constraints by creating new `Hazards` and `HazardFilters`
     - [x] `Hazards`: abstraction of all spatial constraints into a single model
-    - [x] `HazardFilters`: excluding specific `Hazards` from consideration on a per-query basis
+    - [x] `HazardFilters`: enables specific `Hazards` to be ignored on a per-query basis
 - **Currently supports:**
-  - [x] Bin- & strip-packing problems
-  - [x] Irregular-shaped items & bins
+  - [x] Irregularly shaped items & containers
   - [x] Continuous rotation & translation
   - [x] Holes and inferior quality zones in containers
   - [x] Minimum separation distance between an item and any hazard
+  - [x] Modelled problem variants:
+    - [x] Bin Packing Problem (with feature `bpp`)
+    - [x] Strip Packing Problem (with feature `spp`)
+    - [ ] Knapsack Problem (coming soon)
+
 
 ## `lbf` ↙️
 
 The `lbf` crate contains a reference implementation of an optimization algorithm built on top of `jagua-rs`.
-It is a simple left-bottom-fill heuristic, which sequentially places the items into the bin, each time at the left-bottom
+It is a simple left-bottom-fill heuristic, which sequentially places the items into the container, each time at the left-bottom
 most position.
 
-The code is thoroughly documented and should provide a good starting point for anyone interested building their own optimization algorithm on top
+The code is thoroughly documented and should provide a good starting point for anyone interested in building their own optimization algorithm on top
 of `jagua-rs`.
 
-⚠️ *Please note that `lbf` should not be used as an optimization algorithm for any real-world use case.
-Read the [Important note](#important-note) section for more information.
-See [`sparrow`](https://github.com/JeroenGar/sparrow) for a state-of-the-art optimization algorithm which leverages `jagua-rs`*
+>[!WARNING]
+> `lbf` should **not** be used as an optimization algorithm for any real-world use case.
+>Read the [Important note](#important-note) section for more information.
 
 ### How to run LBF
 
@@ -82,7 +86,7 @@ General usage:
 
 ```bash
 cd lbf
-cargo run --release -- \
+cargo run --release --bin lbf -- \
   -i <input file> \
   -c <config file (optional)> \
   -s <solution folder> \
@@ -92,8 +96,7 @@ cargo run --release -- \
 Concrete example:
 
 ```bash
-cd lbf
-cargo run --release -- \
+cargo run --release --bin lbf -- \
   -i assets/swim.json \
   -p spp \
   -c assets/config_lbf.json \
@@ -116,16 +119,16 @@ Two types of files are written:
 #### JSON
 
 The solution JSON is similar to the input JSON, but with the addition of the `Solution` key at the top level.
-It contains all information required to recreate the solution, such as the bins used, how the items are placed inside and some additional statistics.
+It contains all information required to recreate the solution, such as the containers used, how the items are placed inside and some additional statistics.
 
 #### SVG
 
 A visual representation of every layout of the solution is created as an SVG file.
-By default, only the bin and the items placed inside it are drawn.
-Optionally the quadtree, hazard proximity grid and fail-fast surrogates can be drawn on top.
+By default, only the container and the items placed inside it are drawn.
+Optionally, the quadtree, hazard proximity grid and fail-fast surrogates can be drawn on top.
 A custom color theme can also be defined.
 
-All visual options be configured in the config file, see [docs](https://jeroengar.github.io/jagua-rs-docs/lbf/io/svg_util/struct.SvgDrawOptions.html) for all available
+All visual options can be configured in the config file, see [docs](https://jeroengar.github.io/jagua-rs/jagua_rs/io/svg/struct.SvgDrawOptions.html) for all available
 options.
 
 Some examples of layout SVGs created by `lbf`:
@@ -135,8 +138,9 @@ Some examples of layout SVGs created by `lbf`:
   <img src="img/bp_example.svg" width="50%" alt="bin packing example">
 </p>
 
-*Note: Unfortunately, the SVG standard does not support strokes drawn purely inside (or outside) of polygons.
-Items might therefore sometimes falsely appear to be (very slightly) colliding in the SVG visualizations.*
+> [!NOTE]  
+> Unfortunately, the SVG standard does not support strokes drawn purely inside (or outside) of polygons.
+> Items might therefore sometimes falsely appear to be (very slightly) colliding in the SVG visualizations.
 
 ### Config JSON
 
@@ -149,6 +153,7 @@ The configuration file has the following structure:
 {
   "cde_config": { //Configuration of the collision detection engine
     "quadtree_depth": 5, //Maximum depth of the quadtree is 5
+    "cd_threshold": 16, // Perform collision collection immediately if the #edges in a node <= 16
     "item_surrogate_config": {
       "n_pole_limits": [[100, 0.0], [20, 0.75], [10, 0.90]], //See docs for details 
       "n_ff_poles": 2, //Two poles will be used for fail-fast collision detection
@@ -162,8 +167,8 @@ The configuration file has the following structure:
   "ls_frac": 0.2 //Of those 5000 samples, 80% will be sampled at uniformly at random, 20% will be local search samples
 }
 ```
-
-See [docs](https://jeroengar.github.io/jagua-rs-docs/lbf/config/struct.LBFConfig.html) for a detailed description of all available configuration options.
+>[!TIP]
+> See [docs](https://jeroengar.github.io/jagua-rs/lbf/config/struct.LBFConfig.html) for a detailed description of all available configuration options.
 
 ### Important note
 
@@ -176,24 +181,32 @@ Omitting `prng_seed` in the config file disables the deterministic behavior and 
 **This heuristic merely serves as a reference implementation of how to use `jagua-rs` 
 and should  not be used as an optimization algorithm for any real-world use case.**
 
-## Documentation
+For a state-of-the-art optimization algorithm built on top of `jagua-rs` see [`sparrow`](https://github.com/JeroenGar/sparrow) instead.
 
-Documentation of this repo is written in rustdoc and the most recent version is automatically deployed and hosted on GitHub Pages:
-
-- `jagua-rs` docs: [https://jeroengar.github.io/jagua-rs-docs/jagua_rs/](https://jeroengar.github.io/jagua-rs-docs/jagua_rs/)
-- `lbf` docs: [https://jeroengar.github.io/jagua-rs-docs/lbf/](https://jeroengar.github.io/jagua-rs-docs/lbf/)
-
-Alternatively, you can compile and view the docs of older versions locally by using: `cargo doc --open`.
-
-## Testing
+## Continuous Integration
 
 The `jagua-rs` codebase contains a suite of assertion checks which verify the correctness of the engine.
 These `debug_asserts` are enabled by default in debug and test builds, but are omitted in release builds to maximize performance.
 
-Additionally, `lbf` contains some basic integration tests to validate the general correctness of the engine.
-These tests essentially run the heuristic on a set of input files, using multiple configurations and with assertions enabled.
+On every commit and pull request, the following GitHub Actions workflows are run:
+  - Full compile and format check.
+  - Integration tests to simulate an optimization run on a range of instances/configurations with all checks enabled.
+  - Performance benchmarks to alert in case of regressions (see historical [Performance Tracker](https://jeroengar.github.io/jagua-rs/benchmarks/)).
+  - Documentation generation and deployment (see [Documentation](#documentation) section below).
 
-The coverage and granularity of the tests needs to be expanded in the future.
+Tests and benchmarks can be run locally with `cargo test` and `cargo bench --bench ci_bench` respectively.
+
+The coverage and granularity of the tests need to be expanded in the future.
+
+## Documentation
+
+This library is thoroughly documented with rustdoc.
+The most recent version is automatically deployed and hosted at:
+
+- `jagua-rs` docs: [https://jeroengar.github.io/jagua-rs/jagua_rs/](https://jeroengar.github.io/jagua-rs/jagua_rs/)
+- `lbf` docs: [https://jeroengar.github.io/jagua-rs/lbf/](https://jeroengar.github.io/jagua-rs/lbf/)
+
+Alternatively, you can build the docs locally: `cargo doc --open`.
 
 ## Development
 

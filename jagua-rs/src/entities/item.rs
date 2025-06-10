@@ -12,11 +12,11 @@ use anyhow::Result;
 #[derive(Clone, Debug)]
 pub struct Item {
     pub id: usize,
-    /// Contour of the item as defined in the input file
+    /// Original contour of the item as defined in the input
     pub shape_orig: Arc<OriginalShape>,
     /// Contour of the item to be used for collision detection
     pub shape_cd: Arc<SPolygon>,
-    /// Possible rotations in which to place the item
+    /// Allowed rotations in which the item can be placed
     pub allowed_rotation: RotationRange,
     /// The minimum quality the item should be produced out of, if `None` the item requires full quality
     pub min_quality: Option<usize>,
@@ -37,7 +37,7 @@ impl Item {
         let shape_orig = Arc::new(original_shape);
         let shape_int = {
             let mut shape_int = shape_orig.convert_to_internal()?;
-            shape_int.generate_surrogate(surrogate_config);
+            shape_int.generate_surrogate(surrogate_config)?;
             Arc::new(shape_int)
         };
         let hazard_filter = base_quality.map(QZHazardFilter);

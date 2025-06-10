@@ -61,7 +61,7 @@ fn fast_fail_query_bench(c: &mut Criterion) {
     let samples = ITEMS_ID_TO_TEST
         .iter()
         .map(|&item_id| {
-            let sampler = UniformRectSampler::new(layout.cde().bbox, instance.item(item_id));
+            let sampler = UniformRectSampler::new(layout.cde().bbox(), instance.item(item_id));
             (0..N_TOTAL_SAMPLES)
                 .map(|_| sampler.sample(&mut rng))
                 .collect_vec()
@@ -108,7 +108,7 @@ fn fast_fail_query_bench(c: &mut Criterion) {
                     let buffer_shape = &mut buffer_shapes[i];
                     for dtransf in samples_cyclers[i].next().unwrap() {
                         let transf = dtransf.compose();
-                        let collides = match layout.cde().surrogate_collides(
+                        let collides = match layout.cde().detect_surrogate_collision(
                             surrogate,
                             &transf,
                             &NoHazardFilter,
@@ -116,7 +116,9 @@ fn fast_fail_query_bench(c: &mut Criterion) {
                             true => true,
                             false => {
                                 buffer_shape.transform_from(&item.shape_cd, &transf);
-                                layout.cde().poly_collides(buffer_shape, &NoHazardFilter)
+                                layout
+                                    .cde()
+                                    .detect_poly_collision(buffer_shape, &NoHazardFilter)
                             }
                         };
                         match collides {
@@ -148,12 +150,9 @@ pub fn create_custom_surrogate(
 
     let convex_hull_indices = convex_hull::convex_hull_indices(simple_poly);
     let mut poles = vec![simple_poly.poi];
-    poles.extend(generate_surrogate_poles(
-        simple_poly,
-        &sp_config.n_pole_limits,
-    ));
+    poles.extend(generate_surrogate_poles(simple_poly, &sp_config.n_pole_limits).unwrap());
 
-    let piers = generate_piers(simple_poly, n_piers, &poles);
+    let piers = generate_piers(simple_poly, n_piers, &poles).unwrap();
     let convex_hull_area = SPolygon::new(
         convex_hull_indices
             .iter()

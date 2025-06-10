@@ -96,10 +96,6 @@ pub fn layout_to_svg(
                     ("stroke-width", &*format!("{}", 2.0 * stroke_width)),
                 ],
             ))
-            .add(svg_util::data_to_path(
-                svg_util::simple_polygon_data(&container.outer_cd),
-                highlight_cd_shape_style,
-            ))
             .add(title)
     };
 
@@ -137,7 +133,7 @@ pub fn layout_to_svg(
     };
 
     //draw items
-    let (items_group, surrogate_group, highlight_cd_shape_group) = {
+    let (items_group, surrogate_group, mut highlight_cd_shape_group) = {
         //define all the items and their surrogates (if enabled)
         let mut item_defs = Definitions::new();
         let mut surrogate_defs = Definitions::new();
@@ -240,7 +236,7 @@ pub fn layout_to_svg(
         let mut surrogate_group = Group::new().set("id", "surrogates").add(surrogate_defs);
         let mut highlight_cd_shapes_group = Group::new().set("id", "highlight_cd_shapes");
 
-        for pi in layout.placed_items().values() {
+        for pi in layout.placed_items.values() {
             let dtransf = match options.draw_cd_shapes {
                 true => pi.d_transf,
                 false => {
@@ -251,7 +247,7 @@ pub fn layout_to_svg(
             let title = Title::new(format!("item, id: {}, transf: [{}]", pi.item_id, dtransf));
             let pi_ref = Use::new()
                 .set("transform", transform_to_svg(dtransf))
-                .set("xlink:href", format!("#item_{}", pi.item_id))
+                .set("href", format!("#item_{}", pi.item_id))
                 .add(title);
 
             items_group = items_group.add(pi_ref);
@@ -259,14 +255,14 @@ pub fn layout_to_svg(
             if options.surrogate {
                 let pi_surr_ref = Use::new()
                     .set("transform", transform_to_svg(dtransf))
-                    .set("xlink:href", format!("#surrogate_{}", pi.item_id));
+                    .set("href", format!("#surrogate_{}", pi.item_id));
 
                 surrogate_group = surrogate_group.add(pi_surr_ref);
             }
             if options.highlight_cd_shapes {
                 let pi_cd_ref = Use::new()
                     .set("transform", transform_to_svg(dtransf))
-                    .set("xlink:href", format!("#cd_shape_{}", pi.item_id));
+                    .set("href", format!("#cd_shape_{}", pi.item_id));
                 highlight_cd_shapes_group = highlight_cd_shapes_group.add(pi_cd_ref);
             }
         }
@@ -278,7 +274,7 @@ pub fn layout_to_svg(
     let qt_group = match options.quadtree {
         false => None,
         true => {
-            let qt_data = svg_util::quad_tree_data(layout.cde().quadtree(), &NoHazardFilter);
+            let qt_data = svg_util::quad_tree_data(&layout.cde().quadtree, &NoHazardFilter);
             let qt_group = Group::new()
                 .set("id", "quadtree")
                 .add(svg_util::data_to_path(
@@ -319,7 +315,7 @@ pub fn layout_to_svg(
         false => None,
         true => {
             let mut collision_group = Group::new().set("id", "collision_lines");
-            for (pk, pi) in layout.placed_items().iter() {
+            for (pk, pi) in layout.placed_items.iter() {
                 let detector = {
                     let mut detector = BasicHazardDetector::new();
                     layout
@@ -390,6 +386,13 @@ pub fn layout_to_svg(
 
     let vbox_svg = (vbox.x_min, vbox.y_min, vbox.width(), vbox.height());
 
+    if options.highlight_cd_shapes {
+        highlight_cd_shape_group = highlight_cd_shape_group.add(svg_util::data_to_path(
+            svg_util::simple_polygon_data(&container.outer_cd),
+            highlight_cd_shape_style,
+        ));
+    }
+
     let optionals = [
         Some(highlight_cd_shape_group),
         Some(surrogate_group),
@@ -402,7 +405,6 @@ pub fn layout_to_svg(
 
     Document::new()
         .set("viewBox", vbox_svg)
-        .set("xmlns:xlink", "http://www.w3.org/1999/xlink")
         .add(container_group)
         .add(items_group)
         .add(qz_group)

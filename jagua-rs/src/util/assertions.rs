@@ -19,7 +19,7 @@ pub fn layouts_match(layout: &Layout, layout_snapshot: &LayoutSnapshot) -> bool 
     }
     for placed_item in layout_snapshot.placed_items.values() {
         if !layout
-            .placed_items()
+            .placed_items
             .values()
             .any(|pi| pi.item_id == placed_item.item_id && pi.d_transf == placed_item.d_transf)
         {
@@ -78,9 +78,9 @@ pub fn qt_node_contains_no_deactivated_hazards<'a>(
 }
 
 pub fn qt_contains_no_dangling_hazards(cde: &CDEngine) -> bool {
-    if let Some(children) = &cde.quadtree().children {
+    if let Some(children) = &cde.quadtree.children {
         for child in children.as_ref() {
-            if !qt_node_contains_no_dangling_hazards(child, cde.quadtree()) {
+            if !qt_node_contains_no_dangling_hazards(child, &cde.quadtree) {
                 return false;
             }
         }
@@ -120,14 +120,14 @@ fn qt_node_contains_no_dangling_hazards(node: &QTNode, parent: &QTNode) -> bool 
 
 pub fn qt_hz_entity_activation_consistent(cde: &CDEngine) -> bool {
     for (active, hz_entity) in cde
-        .quadtree()
+        .quadtree
         .hazards
         .all_hazards()
         .iter()
         .map(|h| (h.active, &h.entity))
         .unique()
     {
-        if !hz_entity_same_everywhere(cde.quadtree(), hz_entity, active) {
+        if !hz_entity_same_everywhere(&cde.quadtree, hz_entity, active) {
             return false;
         }
     }
@@ -163,13 +163,13 @@ pub fn layout_qt_matches_fresh_qt(layout: &Layout) -> bool {
     //rebuild the quadtree
     let container = &layout.container;
     let mut fresh_cde = container.base_cde.as_ref().clone();
-    for (pk, pi) in layout.placed_items().iter() {
+    for (pk, pi) in layout.placed_items.iter() {
         let hazard = Hazard::new((pk, pi).into(), pi.shape.clone());
         fresh_cde.register_hazard(hazard);
     }
 
-    qt_nodes_match(Some(layout.cde().quadtree()), Some(fresh_cde.quadtree()))
-        && hazards_match(layout.cde().dynamic_hazards(), fresh_cde.dynamic_hazards())
+    qt_nodes_match(Some(&layout.cde().quadtree), Some(&fresh_cde.quadtree))
+        && hazards_match(&layout.cde().dynamic_hazards, &fresh_cde.dynamic_hazards)
 }
 
 fn qt_nodes_match(qn1: Option<&QTNode>, qn2: Option<&QTNode>) -> bool {
@@ -337,7 +337,7 @@ pub fn print_layout(layout: &Layout) {
     );
     println!();
 
-    for pi in layout.placed_items().values() {
+    for pi in layout.placed_items.values() {
         let transformation_str = {
             let t_decomp = &pi.d_transf;
             let (tr, (tx, ty)) = (t_decomp.rotation(), t_decomp.translation());
