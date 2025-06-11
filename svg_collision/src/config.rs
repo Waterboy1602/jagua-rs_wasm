@@ -17,6 +17,7 @@ impl Default for Config {
         Self {
             cde_config: CDEConfig {
                 quadtree_depth: 5,
+                cd_threshold: 16,
                 item_surrogate_config: SPSurrogateConfig {
                     n_pole_limits: [(100, 0.0), (20, 0.75), (10, 0.90)],
                     n_ff_poles: 2,

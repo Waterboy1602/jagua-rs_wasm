@@ -1,18 +1,22 @@
-use std::fs::File;
-use std::io::Read;
-
 use svg::parser::{Event, Parser};
 
-use crate::config::Config;
 use itertools::Itertools;
 use jagua_rs::entities::Item;
+use jagua_rs::entities::Layout;
 use jagua_rs::geometry::DTransformation;
 use jagua_rs::geometry::shape_modification::ShapeModifyConfig;
 use jagua_rs::io::ext_repr::{ExtContainer, ExtItem, ExtSPolygon, ExtShape};
 use jagua_rs::io::import::{Importer, ext_to_int_transformation};
+use jagua_rs::io::svg::layout_to_svg;
 use jagua_rs::probs::bpp::entities::{BPInstance, Bin};
 
 use std::collections::HashMap;
+
+use crate::config::Config;
+use crate::config::DRAW_OPTIONS_WITHOUT_HIGHLIGHT;
+use crate::config::OUTPUT_DIR;
+
+use std::path::Path;
 
 pub struct SvgParser {
     pub shape_modify_config: ShapeModifyConfig,
@@ -44,12 +48,7 @@ impl SvgParser {
 
     // Parses an SVG file and converts it into a `Layout` object.
     // TODO START MET Strip Packing (SP)
-    pub fn svg_file_to_instance(&mut self, path: &str) -> Result<BPInstance, String> {
-        let mut file = File::open(path).map_err(|e| format!("Failed to open SVG file: {}", e))?;
-        let mut content = String::new();
-        file.read_to_string(&mut content)
-            .map_err(|e| format!("Failed to read SVG file: {}", e))?;
-
+    pub fn svg_file_to_instance(&mut self, svg_str: &str) -> Result<BPInstance, String> {
         let mut inside_defs = false;
         let mut inside_group = false;
 
@@ -58,7 +57,7 @@ impl SvgParser {
         let mut bins: Vec<Bin> = Vec::new();
         let mut item_map: HashMap<usize, (Item, usize)> = HashMap::new();
 
-        for event in Parser::new(&content) {
+        for event in Parser::new(&svg_str) {
             match event {
                 Event::Tag("defs", _, _attributes) => {
                     inside_defs = !inside_defs;
@@ -249,4 +248,62 @@ impl SvgParser {
             .or_insert_with(Vec::new)
             .push(transformation);
     }
+}
+
+pub fn run_cde(svg_str: &str) {
+    let config = Config::default();
+
+    let mut svg_parser = SvgParser::new(config, None, None);
+
+    let instance = SvgParser::svg_file_to_instance(&mut svg_parser, svg_str).unwrap();
+
+    let mut layout = Layout::new(instance.bins[0].container.clone());
+
+    for (item, _item_demand) in instance.items.iter() {
+        for transformation in svg_parser.item_transformations[&item.id].iter() {
+            layout.place_item(item, transformation.clone());
+        }
+    }
+
+    let svg = layout_to_svg(
+        &layout,
+        &instance,
+        DRAW_OPTIONS_WITHOUT_HIGHLIGHT,
+        "SVG TEST",
+    );
+
+    svg::save(
+        Path::new(&*format!(
+            "{}/svg_test_without_collision_highlight.svg",
+            OUTPUT_DIR
+        )),
+        &svg,
+    )
+    .expect("failed to save SVG document");
+}
+
+pub fn run_cde_wasm(svg_str: &str) -> Result<String, String> {
+    let config = Config::default();
+
+    let mut svg_parser = SvgParser::new(config, None, None);
+
+    let instance = SvgParser::svg_file_to_instance(&mut svg_parser, svg_str).unwrap();
+
+    let mut layout = Layout::new(instance.bins[0].container.clone());
+
+    for (item, _item_demand) in instance.items.iter() {
+        for transformation in svg_parser.item_transformations[&item.id].iter() {
+            layout.place_item(item, transformation.clone());
+        }
+    }
+
+    let svg = layout_to_svg(
+        &layout,
+        &instance,
+        DRAW_OPTIONS_WITHOUT_HIGHLIGHT,
+        "SVG TEST",
+    );
+
+    let svg_string = svg.to_string();
+    Ok(svg_string)
 }

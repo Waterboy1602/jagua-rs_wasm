@@ -1,6 +1,8 @@
+mod enums;
 mod utils;
 
-use serde::{Deserialize, Serialize};
+use crate::enums::Status;
+
 use serde_wasm_bindgen::{from_value, to_value};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -9,7 +11,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::*;
 
-use jagua_rs::collision_detection::cd_engine::CDEngine;
+use svg_collision::io::svg_parser::run_cde_wasm;
 
 #[wasm_bindgen]
 pub fn run() {
@@ -109,7 +111,7 @@ pub fn toggle_box() {
 }
 
 #[wasm_bindgen]
-pub fn SVGCollision(js_value: JsValue) -> Result<JsValue, JsValue> {
+pub fn svg_collision(js_value: JsValue) -> Result<JsValue, JsValue> {
     let moved_element: HashMap<String, Option<String>> = match from_value(js_value) {
         Ok(val) => val,
         Err(e) => return Err(JsValue::from_str(&format!("Error deserializing: {}", e))),
@@ -123,4 +125,112 @@ pub fn SVGCollision(js_value: JsValue) -> Result<JsValue, JsValue> {
         }
         Err(e) => return Err(JsValue::from_str(&format!("Error serializing: {}", e))),
     }
+}
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+
+    #[wasm_bindgen(js_name = postMessage)]
+    fn post_message_to_js(s: &str);
+
+    #[wasm_bindgen(js_name = postMessage)]
+    fn post_message_object_to_js(val: &JsValue);
+}
+
+#[cfg(feature = "console_error_panic_hook")]
+#[wasm_bindgen]
+pub fn make_jaguars_instance(svg_input: JsValue) -> Result<(), JsValue> {
+    console_error_panic_hook::set_once();
+
+    // console::log_1(&"run cde".into());
+
+    let progress_msg = "PROGRESS: Started processing";
+    let progress_obj = js_sys::Object::new();
+    js_sys::Reflect::set(
+        &progress_obj,
+        &JsValue::from_str("type"),
+        &JsValue::from_str(&Status::Processing.to_string()),
+    )
+    .unwrap();
+
+    js_sys::Reflect::set(
+        &progress_obj,
+        &JsValue::from_str("message"),
+        &JsValue::from_str(&progress_msg),
+    )
+    .unwrap();
+
+    post_message_object_to_js(&progress_obj);
+    // post_message_to_js(&"run cde");
+
+    let svg_str: String = match from_value(svg_input) {
+        Ok(val) => val,
+        Err(e) => {
+            let err_msg = format!("Error deserializing SVG input: {}", e);
+            let error_obj = js_sys::Object::new();
+            js_sys::Reflect::set(
+                &error_obj,
+                &JsValue::from_str("type"),
+                &JsValue::from_str(&Status::Error.to_string()),
+            )
+            .unwrap();
+            js_sys::Reflect::set(
+                &error_obj,
+                &JsValue::from_str("message"),
+                &JsValue::from_str(&err_msg),
+            )
+            .unwrap();
+            post_message_object_to_js(&error_obj);
+
+            return Ok(());
+        }
+    };
+    // console::log_1(&svg_str.clone().into());
+    // post_message_to_js(&svg_str);
+
+    let svg_result = run_cde_wasm(&svg_str);
+
+    match svg_result {
+        Ok(svg_result) => {
+            // console::log_1(&svg_result.clone().into());
+
+            let final_obj = js_sys::Object::new();
+            js_sys::Reflect::set(
+                &final_obj,
+                &JsValue::from_str("type"),
+                &JsValue::from_str(&Status::Finished.to_string()),
+            )
+            .unwrap();
+            js_sys::Reflect::set(
+                &final_obj,
+                &JsValue::from_str("result"),
+                &JsValue::from_str(&svg_result),
+            )
+            .unwrap();
+            post_message_object_to_js(&final_obj);
+        }
+        Err(e) => {
+            let err_msg = format!("Error during WASM computation: {}", e);
+            let error_obj = js_sys::Object::new();
+            js_sys::Reflect::set(
+                &error_obj,
+                &JsValue::from_str("type"),
+                &JsValue::from_str(&Status::Error.to_string()),
+            )
+            .unwrap();
+            js_sys::Reflect::set(
+                &error_obj,
+                &JsValue::from_str("message"),
+                &JsValue::from_str(&err_msg),
+            )
+            .unwrap();
+            post_message_object_to_js(&error_obj);
+
+            return Ok(());
+        }
+    };
+
+    Ok(())
 }
