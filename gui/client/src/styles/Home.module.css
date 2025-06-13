@@ -149,10 +149,23 @@ div.container.solution > img {
   font-family: monospace;
   font-size: 0.95em;
 }
+
 .logBox ul {
   margin: 0;
   padding-left: 1.2em;
 }
+
 .logBox li {
   margin-bottom: 0.2em;
+}
+
+.algoDropdown {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin: 10px 0;
+  background: #fff;
+  color: #333;
 }

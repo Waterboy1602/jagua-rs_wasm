@@ -1,7 +1,7 @@
 import { useState, Dispatch, SetStateAction, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import styles from "../styles/Home.module.css";
-import { Status } from "../Enums";
+import { FileType, Status, OptimizationAlgo } from "../Enums";
 
 interface HomeProps {
   svgResult: string | null;
@@ -9,13 +9,13 @@ interface HomeProps {
   logs: string[];
   setLogs: Dispatch<SetStateAction<string[]>>;
 }
-interface ParsedJson {
-  [key: string]: unknown;
-}
-
-interface NavigateState {
-  input: ParsedJson;
-}
+// interface ParsedJson {
+//   [key: string]: unknown;
+// }
+//
+// interface NavigateState {
+//   input: ParsedJson;
+// }
 
 interface FileChangeEvent extends React.ChangeEvent<HTMLInputElement> {
   target: HTMLInputElement & { files: FileList };
@@ -23,10 +23,11 @@ interface FileChangeEvent extends React.ChangeEvent<HTMLInputElement> {
 
 function Home({ svgResult, setSvgResult, logs, setLogs }: HomeProps) {
   const [file, setFile] = useState<File | null>(null);
+  const [optimizationAlgo, setOptimizationAlgo] = useState(OptimizationAlgo.LBF);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
   const [useDemoFile, setUseDemoFile] = useState(true);
+  const logBoxRef = useRef<HTMLDivElement>(null);
 
   const workerRef = useRef<Worker | null>(null);
 
@@ -55,14 +56,24 @@ function Home({ svgResult, setSvgResult, logs, setLogs }: HomeProps) {
         workerRef.current = null;
       }
     };
-  }, []);
+  }, [setLogs, setSvgResult]);
 
-  const startWasmComputation = (svgInput: string): void => {
+  useEffect(() => {
+    if (logBoxRef.current) {
+      logBoxRef.current.scrollTop = logBoxRef.current.scrollHeight;
+    }
+  }, [logs]);
+
+  const startOptimization = (
+    optimizationAlgo: OptimizationAlgo,
+    svgInput: string,
+    fileType: FileType
+  ): void => {
     setLogs([]);
     if (workerRef.current) {
       workerRef.current.postMessage({
         type: Status.START,
-        payload: { svgInput: svgInput },
+        payload: { optimizationAlgo: optimizationAlgo, svgInput: svgInput, fileType: fileType },
       });
     }
   };
@@ -74,12 +85,13 @@ function Home({ svgResult, setSvgResult, logs, setLogs }: HomeProps) {
 
     if (useDemoFile) {
       try {
-        const response = await fetch("swim.svg");
+        const response = await fetch("assets/swim.json");
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const fileContent = await response.text();
-        startWasmComputation(fileContent);
+        startOptimization(optimizationAlgo, fileContent, FileType.JSON);
       } catch (e) {
         setError("Failed to load demo file: " + e);
       }
@@ -95,19 +107,17 @@ function Home({ svgResult, setSvgResult, logs, setLogs }: HomeProps) {
 
         try {
           if (file.type === "image/svg+xml") {
-            startWasmComputation(fileContent);
+            startOptimization(optimizationAlgo, fileContent, FileType.SVG);
           }
 
           if (file.type === "application/json") {
-            try {
-              const parsedInput: ParsedJson = JSON.parse(fileContent);
+            // const parsedInput: ParsedJson = JSON.parse(fileContent);
 
-              navigate("/input", {
-                state: { input: parsedInput } as NavigateState,
-              });
-            } catch {
-              setError("Invalid JSON file. Please correct it.");
-            }
+            // navigate("/input", {
+            //   state: { input: parsedInput } as NavigateState,
+            // });
+
+            startOptimization(optimizationAlgo, fileContent, FileType.JSON);
           }
         } catch (wasmError) {
           setError("WASM processing error: " + wasmError);
@@ -175,6 +185,18 @@ function Home({ svgResult, setSvgResult, logs, setLogs }: HomeProps) {
                 <span className={styles.demoLabel}>Use demo file</span>
               </label>
 
+              <label className={styles.label} htmlFor="dropdown">
+                Algorithm
+              </label>
+              <select
+                id="optAlgoDropdown"
+                className={styles.algoDropdown}
+                onChange={(e) => setOptimizationAlgo(e.target.value as OptimizationAlgo)}
+              >
+                <option value={OptimizationAlgo.LBF}>LBF</option>
+                <option value={OptimizationAlgo.SPARROW}>SPARROW</option>
+              </select>
+
               <button type="submit" className={styles.button} disabled={loading}>
                 {loading ? <span className={styles.loader} /> : "Submit"}
               </button>
@@ -185,7 +207,7 @@ function Home({ svgResult, setSvgResult, logs, setLogs }: HomeProps) {
         </div>
 
         {logs.length > 0 && (
-          <div className={styles.logBox}>
+          <div className={styles.logBox} ref={logBoxRef}>
             <h4>Logs</h4>
             <ul>
               {logs.map((log, idx) => (

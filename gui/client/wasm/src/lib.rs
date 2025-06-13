@@ -3,6 +3,7 @@ mod utils;
 
 use crate::enums::Status;
 
+use log::{log, Level, LevelFilter};
 use serde_wasm_bindgen::{from_value, to_value};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -10,104 +11,84 @@ use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::*;
+use web_time::Instant;
 
+use anyhow::{Context, Result};
+use jagua_rs::io::import::Importer;
+use jagua_rs::io::svg::s_layout_to_svg;
+use jagua_rs::probs::spp;
+use jagua_rs::probs::spp::io::ext_repr::ExtSPInstance;
+use lbf::config::LBFConfig;
+use lbf::opt::lbf_spp::LBFOptimizerSP;
+use rand::prelude::SmallRng;
+use rand::SeedableRng;
 use svg_collision::io::svg_parser::run_cde_wasm;
 
-#[wasm_bindgen]
-pub fn run() {
-    let document = window().unwrap().document().unwrap();
-    let light = document
-        .get_element_by_id("traffic-light")
-        .unwrap()
-        .dyn_into::<HtmlElement>()
-        .unwrap();
-    let light_rc = Rc::new(RefCell::new(light));
-
-    let moving = Rc::new(RefCell::new(false));
-    let moving_clone = moving.clone();
-    let light_clone1 = light_rc.clone();
-
-    let closure = Closure::<dyn FnMut(MouseEvent)>::new(move |_| {
-        *moving_clone.borrow_mut() = true;
-        light_clone1
-            .borrow_mut()
-            .set_attribute(
-                "style",
-                "background-color: red;
-                width: 100px;
-                height: 100px;
-                backgroundColor: green;
-                borderRadius: 50%;
-                margin: 50px auto;",
-            )
-            .unwrap();
-    });
-
-    document
-        .add_event_listener_with_callback("mousemove", closure.as_ref().unchecked_ref())
-        .unwrap();
-    closure.forget();
-
-    let moving_clone = moving.clone();
-    let light_clone2 = light_rc.clone();
-
-    let stop_checker = Closure::<dyn FnMut()>::new(move || {
-        if *moving_clone.borrow() {
-            *moving_clone.borrow_mut() = false;
-        } else {
-            light_clone2
-                .borrow_mut()
-                .set_attribute(
-                    "style",
-                    "background-color: red;
-                    width: 100px;
-                    height: 100px;
-                    backgroundColor: red;
-                    borderRadius: 50%;
-                    margin: 50px auto;",
-                )
-                .unwrap();
-        }
-    });
-
-    window()
-        .unwrap()
-        .set_interval_with_callback_and_timeout_and_arguments_0(
-            stop_checker.as_ref().unchecked_ref(),
-            1000,
-        )
-        .unwrap();
-    stop_checker.forget();
+lazy_static::lazy_static! {
+    static ref EPOCH: Instant = Instant::now();
 }
 
 #[wasm_bindgen]
-pub fn toggle_box() {
-    console::log_1(&"toggle_box".into());
-
-    let window = web_sys::window().expect("should have a window in this context");
-    let document = window.document().expect("should have a document on window");
-
-    let test_box_element = document
-        .get_element_by_id("testBox")
-        .expect("should have #testBox element on the page");
-
-    let test_box: HtmlElement = match test_box_element.dyn_into::<HtmlElement>() {
-        Ok(element) => element,
-        Err(_) => {
-            console::error_1(&"Could not cast testBox to HtmlElement".into());
-            return;
+pub fn init_logger(level_filter_u8: u8) -> Result<(), JsValue> {
+    let level_filter = match level_filter_u8 {
+        0 => LevelFilter::Off,
+        1 => LevelFilter::Error,
+        2 => LevelFilter::Warn,
+        3 => LevelFilter::Info,
+        4 => LevelFilter::Debug,
+        5 => LevelFilter::Trace,
+        _ => {
+            let error_msg = format!("Invalid LevelFilter value: {}", level_filter_u8);
+            console::error_1(&error_msg.into());
+            return Ok(());
         }
     };
 
-    let class_name = test_box
-        .get_attribute("class")
-        .unwrap_or_else(|| String::from(""));
+    fern::Dispatch::new()
+        .level(level_filter)
+        .chain(fern::Output::call(|record| {
+            let duration = EPOCH.elapsed();
+            let sec = duration.as_secs() % 60;
+            let min = (duration.as_secs() / 60) % 60;
+            let hours = (duration.as_secs() / 60) / 60;
 
-    if class_name == "green" {
-        test_box.set_attribute("class", "red").unwrap();
-    } else {
-        test_box.set_attribute("class", "green").unwrap();
-    }
+            let prefix = format!(
+                "[{}] [{:0>2}:{:0>2}:{:0>2}]",
+                record.level(),
+                hours,
+                min,
+                sec
+            );
+
+            let full_log_message = format!("{prefix:<27}{}", record.args());
+
+            let log_obj = js_sys::Object::new();
+            js_sys::Reflect::set(
+                &log_obj,
+                &JsValue::from_str("type"),
+                &JsValue::from_str(&Status::Processing.to_string()),
+            )
+            .unwrap();
+            js_sys::Reflect::set(
+                &log_obj,
+                &JsValue::from_str("level"),
+                &JsValue::from_str(&record.level().to_string()),
+            )
+            .unwrap();
+            js_sys::Reflect::set(
+                &log_obj,
+                &JsValue::from_str("message"),
+                &JsValue::from_str(&full_log_message.to_string()),
+            )
+            .unwrap();
+
+            post_message_object_to_js(&log_obj.into());
+        }))
+        .apply()
+        .map_err(|e| JsValue::from_str(&format!("Failed to apply logger: {}", e)))?;
+
+    log!(Level::Info, "Epoch: {}", EPOCH.elapsed().as_secs_f64());
+    Ok(())
 }
 
 #[wasm_bindgen]
@@ -141,61 +122,24 @@ extern "C" {
 
 #[cfg(feature = "console_error_panic_hook")]
 #[wasm_bindgen]
-pub fn make_jaguars_instance(svg_input: JsValue) -> Result<(), JsValue> {
+pub fn svg_collision_test(svg_input: JsValue) -> Result<(), JsValue> {
     console_error_panic_hook::set_once();
 
-    // console::log_1(&"run cde".into());
-
-    let progress_msg = "PROGRESS: Started processing";
-    let progress_obj = js_sys::Object::new();
-    js_sys::Reflect::set(
-        &progress_obj,
-        &JsValue::from_str("type"),
-        &JsValue::from_str(&Status::Processing.to_string()),
-    )
-    .unwrap();
-
-    js_sys::Reflect::set(
-        &progress_obj,
-        &JsValue::from_str("message"),
-        &JsValue::from_str(&progress_msg),
-    )
-    .unwrap();
-
-    post_message_object_to_js(&progress_obj);
-    // post_message_to_js(&"run cde");
+    log!(Level::Info, "Started SVG collision test");
 
     let svg_str: String = match from_value(svg_input) {
         Ok(val) => val,
         Err(e) => {
-            let err_msg = format!("Error deserializing SVG input: {}", e);
-            let error_obj = js_sys::Object::new();
-            js_sys::Reflect::set(
-                &error_obj,
-                &JsValue::from_str("type"),
-                &JsValue::from_str(&Status::Error.to_string()),
-            )
-            .unwrap();
-            js_sys::Reflect::set(
-                &error_obj,
-                &JsValue::from_str("message"),
-                &JsValue::from_str(&err_msg),
-            )
-            .unwrap();
-            post_message_object_to_js(&error_obj);
-
+            log!(Level::Error, "Error deserializing SVG input: {}", e);
             return Ok(());
         }
     };
     // console::log_1(&svg_str.clone().into());
-    // post_message_to_js(&svg_str);
 
     let svg_result = run_cde_wasm(&svg_str);
 
     match svg_result {
         Ok(svg_result) => {
-            // console::log_1(&svg_result.clone().into());
-
             let final_obj = js_sys::Object::new();
             js_sys::Reflect::set(
                 &final_obj,
@@ -212,25 +156,74 @@ pub fn make_jaguars_instance(svg_input: JsValue) -> Result<(), JsValue> {
             post_message_object_to_js(&final_obj);
         }
         Err(e) => {
-            let err_msg = format!("Error during WASM computation: {}", e);
-            let error_obj = js_sys::Object::new();
-            js_sys::Reflect::set(
-                &error_obj,
-                &JsValue::from_str("type"),
-                &JsValue::from_str(&Status::Error.to_string()),
-            )
-            .unwrap();
-            js_sys::Reflect::set(
-                &error_obj,
-                &JsValue::from_str("message"),
-                &JsValue::from_str(&err_msg),
-            )
-            .unwrap();
-            post_message_object_to_js(&error_obj);
+            log!(Level::Error, "Error during WASM computation: {}", e);
 
             return Ok(());
         }
     };
+
+    Ok(())
+}
+
+#[cfg(feature = "console_error_panic_hook")]
+#[wasm_bindgen]
+pub fn run_lbf(json_input: JsValue) -> Result<(), JsValue> {
+    console_error_panic_hook::set_once();
+
+    log!(Level::Info, "Started LBF optimization");
+
+    let json_str: String = match from_value(json_input) {
+        Ok(val) => val,
+        Err(e) => {
+            log!(Level::Error, "Error deserializing JSON input: {}", e);
+
+            return Ok(());
+        }
+    };
+
+    let config = LBFConfig::default();
+
+    let ext_sp_instance: ExtSPInstance = serde_json::from_str(&json_str)
+        .context("not a valid strip packing instance (ExtSPInstance)")
+        .unwrap();
+
+    let importer = Importer::new(
+        config.cde_config,
+        config.poly_simpl_tolerance,
+        config.min_item_separation,
+    );
+    let rng = match config.prng_seed {
+        Some(seed) => SmallRng::seed_from_u64(seed),
+        None => SmallRng::from_os_rng(),
+    };
+    let instance = spp::io::import(&importer, &ext_sp_instance).unwrap();
+    let sol = LBFOptimizerSP::new(instance.clone(), config, rng).solve();
+
+    let svg_result =
+        s_layout_to_svg(&sol.layout_snapshot, &instance, config.svg_draw_options, "").to_string();
+
+    let final_obj = js_sys::Object::new();
+    js_sys::Reflect::set(
+        &final_obj,
+        &JsValue::from_str("type"),
+        &JsValue::from_str(&Status::Finished.to_string()),
+    )
+    .unwrap();
+    js_sys::Reflect::set(
+        &final_obj,
+        &JsValue::from_str("result"),
+        &JsValue::from_str(&svg_result),
+    )
+    .unwrap();
+    post_message_object_to_js(&final_obj);
+
+    Ok(())
+}
+
+#[cfg(feature = "console_error_panic_hook")]
+#[wasm_bindgen]
+pub fn run_sparrow(json_input: JsValue) -> Result<(), JsValue> {
+    log!(Level::Info, "Sparrow not yet implemented");
 
     Ok(())
 }

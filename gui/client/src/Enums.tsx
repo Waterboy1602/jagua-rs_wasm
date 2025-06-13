@@ -10,3 +10,8 @@ export enum Status {
   FINISHED = "finished",
   ERROR = "error",
 }
+
+export enum OptimizationAlgo {
+  LBF = "lbf",
+  SPARROW = "sparrow",
+}
