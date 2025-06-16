@@ -1,4 +1,4 @@
-name: Deploy React WASM App to GitHub Pages
+name: Deploy Jagua-rs webpage with React and WASM to GitHub Pages
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
         run: |
           cargo install wasm-pack
           cd wasm && wasm-pack build --target web --out-dir ../gui/src/wasm
-          cd ../ && npm install && npm run build
+          cd ../gui && npm install && npm run build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
