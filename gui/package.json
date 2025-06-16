@@ -3,7 +3,6 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "homepage": "https://waterboy1602.github.io/jagua-rs/",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
