@@ -5,8 +5,6 @@ import SVG from "./../assets/1.svg?react";
 
 import styles from "../styles/SVGMani.module.css";
 
-import init, * as wasm from "../../wasm/pkg/wasm_jagua_rs";
-
 const movedElement = new Map<string, string | null>();
 
 function convertTitleToId(input: string) {
@@ -110,7 +108,6 @@ const SVGManipulation = () => {
           elementSelected(event);
 
           movedElement.set(elementId, null);
-          wasm.toggle_box();
         })
         .on("drag", function (event) {
           element.attr(
@@ -123,16 +120,10 @@ const SVGManipulation = () => {
           movedElement.set(elementId, element.attr("transform") || null);
 
           console.log(movedElement);
-          wasm.toggle_box();
-          wasm.svg_collision(movedElement);
         });
 
       element.call(drag);
     });
-
-    init()
-      .then(() => {})
-      .catch(console.error);
   }, []);
 
   function changeContainerSize(increase: boolean) {

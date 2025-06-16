@@ -1,6 +1,6 @@
 import { FileType, Status, OptimizationAlgo } from "../Enums";
 
-import initWasm, * as wasm from "../../wasm/pkg/wasm_jagua_rs";
+import initWasm, * as wasm from "../wasm/wasm_jagua_rs";
 
 let wasmInitialized = false;
 
