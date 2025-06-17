@@ -1,0 +1,86 @@
+window.BENCHMARK_DATA = {
+  "lastUpdate": 1750162909785,
+  "repoUrl": "https://github.com/Waterboy1602/jagua-rs_wasm",
+  "entries": {
+    "Performance Tracker": [
+      {
+        "commit": {
+          "author": {
+            "email": "vandeputte.wannes@gmail.com",
+            "name": "Wannes",
+            "username": "Waterboy1602"
+          },
+          "committer": {
+            "email": "vandeputte.wannes@gmail.com",
+            "name": "Wannes",
+            "username": "Waterboy1602"
+          },
+          "distinct": true,
+          "id": "4d129dd0a94afbea5d538418615c91873ea273fb",
+          "message": "Fix workspace cargo.toml",
+          "timestamp": "2025-06-17T14:18:53+02:00",
+          "tree_id": "8295dd8ae82c9ed64377f7bf56cf3277b72e7a3f",
+          "url": "https://github.com/Waterboy1602/jagua-rs_wasm/commit/4d129dd0a94afbea5d538418615c91873ea273fb"
+        },
+        "date": 1750162905076,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "cde_collect_1k/3",
+            "value": 2556274,
+            "range": "± 129621",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_collect_1k/4",
+            "value": 3003378,
+            "range": "± 201709",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_collect_1k/5",
+            "value": 3008591,
+            "range": "± 213962",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_update_1k/3",
+            "value": 2270792,
+            "range": "± 16392",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_update_1k/4",
+            "value": 4110074,
+            "range": "± 25535",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_update_1k/5",
+            "value": 8328169,
+            "range": "± 71802",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_detect_1k/3",
+            "value": 267908,
+            "range": "± 6365",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_detect_1k/4",
+            "value": 235415,
+            "range": "± 5231",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_detect_1k/5",
+            "value": 225988,
+            "range": "± 10637",
+            "unit": "ns/iter"
+          }
+        ]
+      }
+    ]
+  }
+}
