@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["jagua-rs", "lbf", "svg_collision"]
+members = ["jagua-rs", "lbf"]
 
 [workspace.dependencies]
 ndarray = "0.16"
