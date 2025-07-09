@@ -43,7 +43,7 @@ pub fn layout_to_svg(
         let bbox = container.outer_orig.bbox();
 
         let label_content = format!(
-            "height: {:.3} | width: {:.3} | density: {:.3}% | {}",
+            "h: {:.3} | w: {:.3} | d: {:.3}% | {}",
             bbox.height(),
             bbox.width(),
             layout.density(instance) * 100.0,
@@ -334,7 +334,7 @@ pub fn layout_to_svg(
                         BasicHazardCollector::with_capacity(layout.cde().hazards_map.len());
                     layout
                         .cde()
-                        .collect_poly_collisions(pi.shape.as_ref(), &mut collector);
+                        .collect_poly_collisions(&pi.shape, &mut collector);
                     collector.retain(|_, entity| {
                         // filter out the item itself
                         if let HazardEntity::PlacedItem {
