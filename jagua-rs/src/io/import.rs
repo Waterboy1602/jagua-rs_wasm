@@ -10,6 +10,7 @@ use crate::geometry::shape_modification::{ShapeModifyConfig, ShapeModifyMode};
 use crate::geometry::{DTransformation, Transformation};
 use crate::io::ext_repr::{ExtContainer, ExtItem, ExtSPolygon, ExtShape};
 use anyhow::{Result, bail};
+use float_cmp::approx_eq;
 use itertools::Itertools;
 use log::{debug, warn};
 
@@ -201,7 +202,7 @@ pub fn import_simple_polygon(sp: &ExtSPolygon) -> Result<SPolygon> {
         points.pop();
     }
     //Remove duplicates that are consecutive (e.g. [1, 2, 2, 3] -> [1, 2, 3])
-    eliminate_degenerate_vertices(&mut points);
+    eliminate_degenerate_points(&mut points);
     //Bail if there are any non-consecutive duplicates.
     if points.len() != points.iter().unique().count() {
         bail!("Simple polygon has non-consecutive duplicate vertices");
@@ -232,7 +233,7 @@ pub fn ext_to_int_transformation(
         .decompose()
 }
 
-pub fn eliminate_degenerate_vertices(points: &mut Vec<Point>) {
+pub fn eliminate_degenerate_points(points: &mut Vec<Point>) {
     let mut indices_to_remove = vec![];
     let n_points = points.len();
     for i in 0..n_points {
@@ -249,8 +250,8 @@ pub fn eliminate_degenerate_vertices(points: &mut Vec<Point>) {
     for index in indices_to_remove {
         if index < points.len() {
             let j = (index + 1) % points.len();
-            debug!(
-                "[IMPORT] degenerate vertex eliminated (idx: {}, {:?}, {:?})",
+            warn!(
+                "[IMPORT] degenerate point of input simple polygon eliminated (idx: {}, {:?}, {:?})",
                 index, points[index], points[j]
             );
             points.remove(index);
