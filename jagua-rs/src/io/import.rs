@@ -11,7 +11,7 @@ use crate::geometry::{DTransformation, Transformation};
 use crate::io::ext_repr::{ExtContainer, ExtItem, ExtSPolygon, ExtShape};
 use anyhow::{Result, bail};
 use itertools::Itertools;
-use log::warn;
+use log::{debug, warn};
 
 /// Converts external representations of items and containers into internal ones.
 #[derive(Clone, Debug, Copy)]
@@ -24,23 +24,28 @@ impl Importer {
     /// Creates a new instance with the given configuration.
     ///
     /// * `cde_config` - Configuration for the CDE (Collision Detection Engine).
-    /// * `poly_simpl_tolerance` - See [`ShapeModifyConfig::simplify_tolerance`].
-    /// * `min_item_separation` - Optional minimum separation distance between items and any other hazard. If enabled, every hazard is inflated/deflated by half this value. See [`ShapeModifyConfig::offset`].
+    /// * `simplify_tolerance` - See [`ShapeModifyConfig`].
+    /// * `min_item_separation` - Optional minimum separation distance between items and any other hazard. If enabled, every hazard is inflated/deflated by half this value. See [`ShapeModifyConfig`].
+    /// * `narrow_concavity_cutoff_ratio` - Optional maximum distance for closing narrow concavities. If enabled, the shapes are modified to close narrow concavities that are smaller than this value. See [`ShapeModifyConfig`].
     pub fn new(
         cde_config: CDEConfig,
-        poly_simpl_tolerance: Option<f32>,
+        simplify_tolerance: Option<f32>,
         min_item_separation: Option<f32>,
+        narrow_concavity_cutoff_ratio: Option<f32>,
     ) -> Importer {
         Importer {
             shape_modify_config: ShapeModifyConfig {
                 offset: min_item_separation.map(|f| f / 2.0),
-                simplify_tolerance: poly_simpl_tolerance,
+                simplify_tolerance,
+                narrow_concavity_cutoff_ratio,
             },
             cde_config,
         }
     }
 
     pub fn import_item(&self, ext_item: &ExtItem) -> Result<Item> {
+        debug!("[IMPORT] starting item {:?}", ext_item.id);
+
         let original_shape = {
             let shape = match &ext_item.shape {
                 ExtShape::Rectangle {
@@ -196,7 +201,7 @@ pub fn import_simple_polygon(sp: &ExtSPolygon) -> Result<SPolygon> {
         points.pop();
     }
     //Remove duplicates that are consecutive (e.g. [1, 2, 2, 3] -> [1, 2, 3])
-    points.dedup();
+    eliminate_degenerate_vertices(&mut points);
     //Bail if there are any non-consecutive duplicates.
     if points.len() != points.iter().unique().count() {
         bail!("Simple polygon has non-consecutive duplicate vertices");
@@ -225,4 +230,30 @@ pub fn ext_to_int_transformation(
         .transform(&pre_transf.compose().inverse())
         .transform_from_decomposed(ext_transf)
         .decompose()
+}
+
+pub fn eliminate_degenerate_vertices(points: &mut Vec<Point>) {
+    let mut indices_to_remove = vec![];
+    let n_points = points.len();
+    for i in 0..n_points {
+        let j = (i + 1) % n_points;
+        let p_i = points[i];
+        let p_j = points[j];
+        if approx_eq!(f32, p_i.0, p_j.0) && approx_eq!(f32, p_i.1, p_j.1) {
+            //points are equal, mark for removal
+            indices_to_remove.push(i);
+        }
+    }
+    //remove points in reverse order to avoid shifting indices
+    indices_to_remove.sort_unstable_by(|a, b| b.cmp(a));
+    for index in indices_to_remove {
+        if index < points.len() {
+            let j = (index + 1) % points.len();
+            debug!(
+                "[IMPORT] degenerate vertex eliminated (idx: {}, {:?}, {:?})",
+                index, points[index], points[j]
+            );
+            points.remove(index);
+        }
+    }
 }
