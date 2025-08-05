@@ -1,10 +1,7 @@
+use crate::Instant;
 use crate::entities::LayoutSnapshot;
 use crate::probs::spp::entities::SPInstance;
 use crate::probs::spp::entities::strip::Strip;
-#[cfg(not(target_arch = "wasm32"))]
-use std::time::Instant;
-#[cfg(target_arch = "wasm32")]
-use web_time::Instant;
 
 /// Snapshot of [`SPProblem`](crate::probs::spp::entities::SPProblem) at a specific moment. Can be used to restore to a previous state.
 #[derive(Debug, Clone)]

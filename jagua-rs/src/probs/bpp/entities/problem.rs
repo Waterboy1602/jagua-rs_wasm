@@ -1,3 +1,4 @@
+use crate::Instant;
 use crate::entities::Instance;
 use crate::entities::Layout;
 use crate::entities::{PItemKey, PlacedItem};
@@ -7,10 +8,6 @@ use crate::probs::bpp::entities::BPSolution;
 use crate::probs::bpp::util::assertions::problem_matches_solution;
 use itertools::Itertools;
 use slotmap::{SlotMap, new_key_type};
-#[cfg(not(target_arch = "wasm32"))]
-use std::time::Instant;
-#[cfg(target_arch = "wasm32")]
-use web_time::Instant;
 
 new_key_type! {
     /// Unique key for each [`Layout`] in a [`BPProblem`] and [`BPSolution`]
