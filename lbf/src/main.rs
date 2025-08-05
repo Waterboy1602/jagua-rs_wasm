@@ -83,7 +83,6 @@ fn main_spp(
         config.cde_config,
         config.poly_simpl_tolerance,
         config.min_item_separation,
-        config.narrow_concavity_cutoff_ratio,
     );
     let rng = match config.prng_seed {
         Some(seed) => SmallRng::seed_from_u64(seed),
@@ -124,7 +123,6 @@ fn main_bpp(
         config.cde_config,
         config.poly_simpl_tolerance,
         config.min_item_separation,
-        config.narrow_concavity_cutoff_ratio,
     );
     let rng = match config.prng_seed {
         Some(seed) => SmallRng::seed_from_u64(seed),
