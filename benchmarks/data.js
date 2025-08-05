@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1754396003645,
+  "lastUpdate": 1754405063468,
   "repoUrl": "https://github.com/Waterboy1602/jagua-rs_wasm",
   "entries": {
     "Performance Tracker": [
@@ -311,6 +311,84 @@ window.BENCHMARK_DATA = {
             "name": "cde_detect_1k/5",
             "value": 219095,
             "range": "± 3042",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vandeputte.wannes@gmail.com",
+            "name": "Wannes",
+            "username": "Waterboy1602"
+          },
+          "committer": {
+            "email": "vandeputte.wannes@gmail.com",
+            "name": "Wannes",
+            "username": "Waterboy1602"
+          },
+          "distinct": true,
+          "id": "01c13d5e31a8f6b09b23b567f591a272f5b7c638",
+          "message": "Revert \"Merge branch 'main' of github.com:JeroenGar/jagua-rs\"\n\nThis reverts commit d8f5de4e8e3bc96b225ab37f9628afa3753a7a5f, reversing\nchanges made to 86820711c22aa8dd2c18adef9298b88c771088d3.",
+          "timestamp": "2025-08-05T16:40:54+02:00",
+          "tree_id": "4bb36d682b17f84183e5305228d6f213286391af",
+          "url": "https://github.com/Waterboy1602/jagua-rs_wasm/commit/01c13d5e31a8f6b09b23b567f591a272f5b7c638"
+        },
+        "date": 1754405047472,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "cde_collect_1k/3",
+            "value": 2274576,
+            "range": "± 114841",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_collect_1k/4",
+            "value": 2636705,
+            "range": "± 142876",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_collect_1k/5",
+            "value": 2642048,
+            "range": "± 144979",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_update_1k/3",
+            "value": 2391341,
+            "range": "± 34203",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_update_1k/4",
+            "value": 4279792,
+            "range": "± 15490",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_update_1k/5",
+            "value": 8568634,
+            "range": "± 58623",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_detect_1k/3",
+            "value": 247198,
+            "range": "± 5874",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_detect_1k/4",
+            "value": 224022,
+            "range": "± 4229",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_detect_1k/5",
+            "value": 220668,
+            "range": "± 2924",
             "unit": "ns/iter"
           }
         ]
