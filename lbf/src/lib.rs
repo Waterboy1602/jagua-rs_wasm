@@ -1,8 +1,5 @@
+use jagua_rs::Instant;
 use std::sync::LazyLock;
-#[cfg(not(target_arch = "wasm32"))]
-use std::time::Instant;
-#[cfg(target_arch = "wasm32")]
-use web_time::Instant;
 
 pub mod config;
 pub mod io;
