@@ -23,5 +23,7 @@ pub mod util;
 /// Enabled variants of the 2D irregular Cutting and Packing Problem.
 pub mod probs;
 
-/// Export the `web_time` crate's `Instant` type for compatibility with web environments.
-pub type Instant = web_time::Instant;
+#[cfg(not(target_arch = "wasm32"))]
+pub use std::time::{Duration, Instant};
+#[cfg(target_arch = "wasm32")]
+pub use web_time::{Duration, Instant};
