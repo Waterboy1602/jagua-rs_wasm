@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755769572742,
+  "lastUpdate": 1755776332610,
   "repoUrl": "https://github.com/Waterboy1602/jagua-rs_wasm",
   "entries": {
     "Performance Tracker": [
@@ -545,6 +545,84 @@ window.BENCHMARK_DATA = {
             "name": "cde_detect_1k/5",
             "value": 213263,
             "range": "± 2943",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vandeputte.wannes@gmail.com",
+            "name": "Wannes",
+            "username": "Waterboy1602"
+          },
+          "committer": {
+            "email": "vandeputte.wannes@gmail.com",
+            "name": "Wannes",
+            "username": "Waterboy1602"
+          },
+          "distinct": true,
+          "id": "ccf2c90493d44eade947f824ca3bf0887ea31761",
+          "message": "Revert \"Merge remote-tracking branch 'upstream/main'\"\n\nThis reverts commit 0cc08a6bf4f5f78d55ae16252a2f4550ad8ee933.",
+          "timestamp": "2025-08-21T13:22:16+02:00",
+          "tree_id": "3c469cb562eb4761d972d6e6654e32f0f6c86ef0",
+          "url": "https://github.com/Waterboy1602/jagua-rs_wasm/commit/ccf2c90493d44eade947f824ca3bf0887ea31761"
+        },
+        "date": 1755776322718,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "cde_collect_1k/3",
+            "value": 2277621,
+            "range": "± 111264",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_collect_1k/4",
+            "value": 2641702,
+            "range": "± 174456",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_collect_1k/5",
+            "value": 2632449,
+            "range": "± 155892",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_update_1k/3",
+            "value": 2303676,
+            "range": "± 13610",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_update_1k/4",
+            "value": 4108906,
+            "range": "± 32238",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_update_1k/5",
+            "value": 7979239,
+            "range": "± 46367",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_detect_1k/3",
+            "value": 244333,
+            "range": "± 6270",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_detect_1k/4",
+            "value": 221242,
+            "range": "± 4411",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cde_detect_1k/5",
+            "value": 219023,
+            "range": "± 3094",
             "unit": "ns/iter"
           }
         ]
